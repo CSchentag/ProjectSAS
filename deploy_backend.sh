@@ -13,12 +13,12 @@ set -o pipefail
 shopt -s extglob
 
 # Stack locations and names
-export DOCKER_REPO='your_registry'
-export DOCKER_STACK='your_stackname'
+export DOCKER_REPO='connorschentag'
+export DOCKER_STACK='sas'
 
 # Directory this script should be in
 current_dir=${PWD##*/}
-proper_dir='PyIoT'
+proper_dir='ProjectSAS'
 
 export GIT_REV_SHORT=$(git rev-parse --short HEAD)
 

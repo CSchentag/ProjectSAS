@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 
-{% block title %}PyIoT{% endblock %}
+{% block title %}Project SAS{% endblock %}
 
 {% block page_content %}
 <div class="page-header">
 	{% if current_user.is_authenticated %}
 		<h4>Hello, {{ current_user.username }}.</h4>
 	{% endif %}
-    <h1>Backend is operational.</h1>
+    <h1>Project SAS is operational.</h1>
 </div>
 {% endblock %}

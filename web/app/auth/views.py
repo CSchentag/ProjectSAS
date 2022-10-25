@@ -108,7 +108,7 @@ def oauth_callback(provider):
         return redirect(url_for('main.index'))
     # gets provider to call correct auth function
     oauth = OAuthSignIn.get_provider(provider)
-    username, email = oauth.callback()
+    email = oauth.callback()
     if email is None:  # need an email to complete authentication
         flash('Authentication failed.')
         return redirect(url_for('main.index'))
@@ -116,7 +116,7 @@ def oauth_callback(provider):
     user = User.query.filter(func.lower(User.email)==email).first()
     if not user:
         if username is None or username == "":
-            # if a username is not found, it pulls t from the email
+            # if a username is not found, it pulls it from the email
             username = email.split('@')[0]
         # checks for correct email domain, fails if it isn't
         if email.split('@')[1] != current_app.config['MAIL_DOMAIN']:

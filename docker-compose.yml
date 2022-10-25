@@ -97,6 +97,7 @@ services:
       placement:
         constraints: [node.role == manager]
     environment:
+      - POSTGRES_HOST_AUTH_METHOD=trust
       - PGPASSFILE=/run/secrets/psql_password_secrets
       - PGPORT=5432
     secrets:
@@ -122,6 +123,7 @@ services:
     ports:
       - "5433:5433" #expose port 5433 outside the container
     environment:
+      - POSTGRES_HOST_AUTH_METHOD=trust
       - PGPASSFILE=/run/secrets/psql_password_secrets
       - POSTGRES_DB=testing
       - PGPORT=5433
