@@ -37,18 +37,9 @@ def show_Accountants_data():
         render_template, which allows a user to view all the data on
         the website via viewdata.html.
     """
-    alive = watchdog.is_alive()
-    auto_refresh = False
-    try:
-        state = db.session.query(Accountants).order_by(
-            desc(Accountants.datetime)).first().state
-    except AttributeError as e:
-        print(e)
-        state = None
-
-    Accountants_columns = Accountants.__table__.columns.keys()  # Grabs column headers
+    accountants_columns = Accountants.__table__.columns.keys()  # Grabs column headers
     page = request.args.get('page', 1, type=int)
-    pagination = db.session.query(Accountants).order_by(desc(Accountants.datetime)).paginate(  # paginates response
+    pagination = db.session.query(Accountants).order_by(desc(Accountants.name)).paginate(  # paginates response
         page, per_page=current_app.config['POSTS_PER_PAGE'], error_out=False)
     page_items = pagination.items
     # need to convert the sql query to something iterable in the table
@@ -62,10 +53,8 @@ def show_Accountants_data():
     data = []
     for item in dict_list:
         data.append(list((item).values()))
-    return render_template('viewdata.html', data=data,
-                           Accountants_columns=Accountants_columns,
-                           pagination=pagination, alive=alive, state=state,
-                           auto_refresh=auto_refresh)
+    accountants = Accountants.query
+    return render_template('viewdata.html', accountants=accountants)
 
 
 @main.route("/manualjsonpostdata", methods=['GET', 'POST'])
@@ -83,7 +72,6 @@ def manual_json_post():
     dict_error = None
     if request.method == 'POST':
         parsed_dict = json_post_to_dict(form)
-
         if parsed_dict is None:
             dict_error = "JSON message was improperly formatted."
             is_dict = False
@@ -99,78 +87,14 @@ def manual_json_post():
         data = Accountants.from_json(json_post)
         to_json_data = data.to_json()
 
-        if not Accountants.is_valid_datetime(json_post):
-            dict_error = ("Missing datetime or Datetime is not "
-                          "in the correct format.")
-            is_dict = False
-            current_app.logger.warning('JSON Form Message '
-                                       'Exception: %s', dict_error)
-            return render_template('json_post.html',
-                                   form=form,
-                                   is_dict=is_dict,
-                                   error=dict_error)
-
-        missing_data, invalid_sensors = Accountants.invalid_data(
-            json_post, flattened_accepted_json)
-
-        if len(missing_data) > 0:
-            dict_error = ("Missing data from sensors. "
-                          "A sensor may have been removed from the network. "
-                          "Missing data: " + str(missing_data))
-            is_dict = False
-            current_app.logger.warning('JSON Form Message '
-                                       'Exception: %s', dict_error)
-            return render_template('json_post.html',
-                                   form=form,
-                                   is_dict=is_dict,
-                                   error=dict_error)
-
-        if len(invalid_sensors) > 0:
-            dict_error = ("Invalid or extra sensors. "
-                          "A sensor may have been added to the network. "
-                          "Invalid: " + str(invalid_sensors))
-            is_dict = False
-            current_app.logger.warning('JSON Form Message '
-                                       'Exception: %s', dict_error)
-            return render_template('json_post.html',
-                                   form=form,
-                                   is_dict=is_dict,
-                                   error=dict_error)
-
-        """
-        Set datetime key in cache if it doesn't already exist.
-        Try to commit it to the database if it wasn't in cache already.
-        """
         try:
-            if cache.get(json_post['datetime']) is None:
-                cache.set(json_post['datetime'], to_json_data,
-                          timeout=current_app.config['REDIS_CACHE_TIMEOUT'])
-                try:
-                    db.session.add(data)
-                    db.session.commit()
-                except sqlalchemy.exc.IntegrityError:
-                    is_dict = False
-                    dict_error = (
-                        "There was a unique constraint error,"
-                        " this datetime already appears in the database.")
-                    return render_template('json_post.html',
-                                           form=form,
-                                           is_dict=is_dict,
-                                           error=dict_error)
-            else:
-                is_dict = False
-                dict_error = ("The datetime already appears in the cache."
-                              " There was a unique constraint error.")
-                return render_template('json_post.html',
-                                       form=form,
-                                       is_dict=is_dict,
-                                       error=dict_error)
-        except RedisError as e:
-            print(e)
-            print('Redis port may be closed, the redis server does '
-                  'not appear to be running.')
+            db.session.add(data)
+            db.session.commit()
+        except sqlalchemy.exc.IntegrityError:
             is_dict = False
-            dict_error = ("Redis port may be closed.")
+            dict_error = (
+                "There was a unique constraint error,"
+                " this id already appears in the database.")
             return render_template('json_post.html',
                                    form=form,
                                    is_dict=is_dict,

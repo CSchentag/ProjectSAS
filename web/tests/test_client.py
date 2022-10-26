@@ -669,35 +669,9 @@ class FlaskClientTestCase(unittest.TestCase):
                                    follow_redirects=True)
         self.assertTrue(b'Authentication failed.' in response.data)
 
-    # TEST VIEWALL POSTS WORK
-
-    def test_toggle_search(self):
-        """DEPRECATED: test checkbox form on viewall"""
-        self.assertTrue(None is None)
-        """
-        self.login()
-        response = self.client.post(url_for('main.show_machine_data'),
-                                    data={'search_enable': 'True'})
-        self.assertTrue(b'True' in response.data)
-        response = self.client.post(url_for('main.show_machine_data'),
-                                    data={'search_enable': ''})
-        self.assertTrue(b'Enable search' in response.data)
-        """
     # TEST JSON POST TO WEBPAGE
 
-    def test_wrong_json_time_format(self):
-        """Test that an error will be thrown if the date is not rfc3339"""
-        self.login()
-        json_with_bad_date = json.loads(self.EXAMPLE_COMPACT_JSON_MESSAGE)
-        json_with_bad_date["datetime"] = "201708-04T20:40:25Z"
-        json_with_bad_date = json.dumps(json_with_bad_date)
-        data = {}
-        data['json_message'] = json_with_bad_date
-        response = self.client.post(
-            url_for('main.manual_json_post'), data=data)
-        self.assertTrue(b'Datetime is not in the correct' in response.data)
-
-    def test_json_post_unique_datetime_error(self):
+    def test_json_post_unique_accountant_id_error(self):
         """Check error is thrown if datetime is aready in the database"""
         self.login()
         data = {}
@@ -708,12 +682,3 @@ class FlaskClientTestCase(unittest.TestCase):
             url_for('main.manual_json_post'), data=data)
         self.assertTrue(
             b'There was a unique constraint error' in response.data)
-
-    def test_json_missing_datetime(self):
-        """Test datetime missing will be caught seperately"""
-        self.login()
-        data = {}
-        data['json_message'] = json.dumps({'datetme': '2017-08-11T18:39:45Z'})
-        response = self.client.post(
-            url_for('main.manual_json_post'), data=data)
-        self.assertTrue(b'Missing datetime' in response.data)

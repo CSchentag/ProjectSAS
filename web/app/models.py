@@ -217,8 +217,13 @@ class Accountants(db.Model):
     """Template for the Accountants Info table"""
     __tablename__ = 'accountants'
     # metadata
-    datetime = db.Column(db.String(128), primary_key=True)
-    sensor_1 = db.Column(db.String(128))
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(64), index=True, unique=True)
+    email = db.Column(db.String(128), index=True, unique=True)
+    phone_num = db.Column(db.String(64), index=True, unique=True)
+    company = db.Column(db.String(128))
+    specialty = db.Column(db.String(128))
+    about_me = db.Column(db.String(140))
 
     @staticmethod
     def flatten(dictionary, parent_key='', sep='__'):
@@ -244,26 +249,6 @@ class Accountants(db.Model):
         return dict(items)
 
     @staticmethod
-    def is_valid_datetime(json_post):
-        """
-        Determines if the datetime is strictly RFC3339
-
-        Args:
-            json_post: a json message as a python dict
-
-        Returns:
-            True if the value in key=datetime is RFC3339
-        """
-        try:
-            if not strict_rfc3339.validate_rfc3339(json_post["datetime"]):
-                return False
-            else:
-                return True
-        except KeyError as e:
-            print(e)
-            return False
-
-    @staticmethod
     def invalid_data(json_post, accepted_json):
         """
         Analyzes json message for any None values, returns which ones are
@@ -277,7 +262,7 @@ class Accountants(db.Model):
             A list of missing data or invalid sensors as a tuple of
             (missing_data, invalid_sensors)
         """
-
+        """
         missing_data = []
         data = Accountants.from_json(json_post)
         to_json_data = data.to_json()
@@ -302,6 +287,8 @@ class Accountants(db.Model):
                           'backend functions.')
                 invalid_sensors.append(key)
         return missing_data, invalid_sensors
+        """
+        pass
 
     def to_json(self):
         """
@@ -315,9 +302,13 @@ class Accountants(db.Model):
         """
         json_post = {
             # Metadata
-            'datetime': self.datetime,
-            'sensor_1': self.sensor_1
-        }  # ADD MORE SENSORS HERE
+            'name': self.name,
+            'email': self.email,
+            'phone_num': self.phone_num,
+            'company': self.company,
+            'specialty': self.specialty,
+            'about_me': self.about_me
+        }
         return json_post
 
     # pylint: disable=line-too-long
@@ -336,8 +327,18 @@ class Accountants(db.Model):
             ValidationError is date or time are missing
         """
         # Metadata
-        datetime = json_post.get('datetime')
-        sensor_1 = json_post.get('sensor_1')
+        id = json_post.get('id')
+        name = json_post.get('name')
+        email = json_post.get('email')
+        phone_num = json_post.get('phone_num')
+        company = json_post.get('company')
+        specialty = json_post.get('specialty')
+        about_me = json_post.get('about_me')
 
-        return Accountants(datetime=datetime,  # ADD MORE SENSORS HERE
-                       sensor_1=sensor_1)
+        return Accountants(id=id,
+                       name=name,
+                       email=email,
+                       phone_num=phone_num,
+                       company=company,
+                       specialty=specialty,
+                       about_me=about_me)
