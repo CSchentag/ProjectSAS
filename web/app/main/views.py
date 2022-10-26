@@ -13,7 +13,7 @@ from .forms import JSONForm, SearchEnableForm
 from . import main
 from .. import db, cache, watchdog
 from ..accepted_json_message import ACCEPTED_JSON
-from ..models import Machine
+from ..models import Accountants
 
 
 @main.route('/')
@@ -29,9 +29,9 @@ def index():
 
 @main.route("/viewdata", methods=['GET', 'POST'])
 @login_required
-def show_machine_data():
+def show_Accountants_data():
     """
-    Outputs all machine post table data to an HTML table
+    Outputs all Accountants post table data to an HTML table
 
     Returns:
         render_template, which allows a user to view all the data on
@@ -40,19 +40,19 @@ def show_machine_data():
     alive = watchdog.is_alive()
     auto_refresh = False
     try:
-        state = db.session.query(Machine).order_by(
-            desc(Machine.datetime)).first().state
+        state = db.session.query(Accountants).order_by(
+            desc(Accountants.datetime)).first().state
     except AttributeError as e:
         print(e)
         state = None
 
-    machine_columns = Machine.__table__.columns.keys()  # Grabs column headers
+    Accountants_columns = Accountants.__table__.columns.keys()  # Grabs column headers
     page = request.args.get('page', 1, type=int)
-    pagination = db.session.query(Machine).order_by(desc(Machine.datetime)).paginate(  # paginates response
+    pagination = db.session.query(Accountants).order_by(desc(Accountants.datetime)).paginate(  # paginates response
         page, per_page=current_app.config['POSTS_PER_PAGE'], error_out=False)
     page_items = pagination.items
     # need to convert the sql query to something iterable in the table
-    # no coverage here but is tested via same function in api_0_1.machine_post
+    # no coverage here but is tested via same function in api_0_1.Accountants_post
     dict_list = []
     for item in page_items:
         d = {}
@@ -63,7 +63,7 @@ def show_machine_data():
     for item in dict_list:
         data.append(list((item).values()))
     return render_template('viewdata.html', data=data,
-                           machine_columns=machine_columns,
+                           Accountants_columns=Accountants_columns,
                            pagination=pagination, alive=alive, state=state,
                            auto_refresh=auto_refresh)
 
@@ -94,12 +94,12 @@ def manual_json_post():
                                    is_dict=is_dict,
                                    error=dict_error)
 
-        json_post = Machine.flatten(parsed_dict)
-        flattened_accepted_json = Machine.flatten(ACCEPTED_JSON)
-        data = Machine.from_json(json_post)
+        json_post = Accountants.flatten(parsed_dict)
+        flattened_accepted_json = Accountants.flatten(ACCEPTED_JSON)
+        data = Accountants.from_json(json_post)
         to_json_data = data.to_json()
 
-        if not Machine.is_valid_datetime(json_post):
+        if not Accountants.is_valid_datetime(json_post):
             dict_error = ("Missing datetime or Datetime is not "
                           "in the correct format.")
             is_dict = False
@@ -110,7 +110,7 @@ def manual_json_post():
                                    is_dict=is_dict,
                                    error=dict_error)
 
-        missing_data, invalid_sensors = Machine.invalid_data(
+        missing_data, invalid_sensors = Accountants.invalid_data(
             json_post, flattened_accepted_json)
 
         if len(missing_data) > 0:

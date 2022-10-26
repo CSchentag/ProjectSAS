@@ -290,7 +290,6 @@ class API2TestCase(unittest.TestCase):
             headers=self.get_api_headers('bill.nye@'+current_app.config['MAIL_DOMAIN'],
                                          password='TheScienceGuy'))
         self.assertTrue(b'2017-09-13T13:01:58Z' in response.data)
-        self.assertTrue(b'Could not find data.' in response.data)
 
     def test_too_many_requests_get_posts(self):
         """Test too many seconds  are requested for get posts"""
@@ -306,7 +305,7 @@ class API2TestCase(unittest.TestCase):
                     end_time='2018-09-13T13:01:59Z'),
             headers=self.get_api_headers('bill.nye@'+current_app.config['MAIL_DOMAIN'],
                                          password='TheScienceGuy'))
-        self.assertTrue(b'Request is above 3600' in response.data)
+        self.assertTrue(b'Request is above 1800' in response.data)
 
     def test_compact_posts(self):
         """same as test_posts but using example_compact.json"""
@@ -433,7 +432,7 @@ class API2TestCase(unittest.TestCase):
         db.session.commit()
 
         #example_json_with_removed_item = self.EXAMPLE_JSON_MESSAGE
-        example_json_with_removed_item = {"datetime":"2017-08-11T18:39:45Z"}
+        example_json_with_removed_item = {"datetime":"2017-08-11T18:39:45Z","sensor_1":"None"}
         response = self.client.post(
             url_for('api_0_1.new_post'),
             headers=self.get_api_headers('jim.halpert@'+current_app.config['MAIL_DOMAIN'],

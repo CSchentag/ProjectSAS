@@ -108,7 +108,7 @@ class GoogleSignIn(OAuthSignIn):
             data used to create user profile.
         """
         if 'code' not in request.args:
-            return None, None
+            return None
         oauth_session = self.service.get_auth_session(
             data={'code': request.args['code'],
                   'grant_type': 'authorization_code',

@@ -213,9 +213,9 @@ class AnonymousUser(AnonymousUserMixin):
 login_manager.anonymous_user = AnonymousUser
 
 
-class Machine(db.Model):
-    """Template for the Machine Info table"""
-    __tablename__ = 'machine'
+class Accountants(db.Model):
+    """Template for the Accountants Info table"""
+    __tablename__ = 'accountants'
     # metadata
     datetime = db.Column(db.String(128), primary_key=True)
     sensor_1 = db.Column(db.String(128))
@@ -238,7 +238,7 @@ class Machine(db.Model):
         for key, value in dictionary.items():
             new_key = parent_key + sep + key if parent_key else key
             if isinstance(value, collections.MutableMapping):
-                items.extend(Machine.flatten(value, new_key, sep=sep).items())
+                items.extend(Accountants.flatten(value, new_key, sep=sep).items())
             else:
                 items.append((new_key, value))
         return dict(items)
@@ -279,7 +279,7 @@ class Machine(db.Model):
         """
 
         missing_data = []
-        data = Machine.from_json(json_post)
+        data = Accountants.from_json(json_post)
         to_json_data = data.to_json()
         for key, value in to_json_data.items():
             if value == "None":
@@ -330,7 +330,7 @@ class Machine(db.Model):
             json_post: the converted JSON data for the API
 
         Results:
-            Machine, which is the newly converted JSON data for API
+            Accountants, which is the newly converted JSON data for API
 
         Raisess:
             ValidationError is date or time are missing
@@ -339,5 +339,5 @@ class Machine(db.Model):
         datetime = json_post.get('datetime')
         sensor_1 = json_post.get('sensor_1')
 
-        return Machine(datetime=datetime,  # ADD MORE SENSORS HERE
+        return Accountants(datetime=datetime,  # ADD MORE SENSORS HERE
                        sensor_1=sensor_1)

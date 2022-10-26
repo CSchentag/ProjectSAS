@@ -16,7 +16,7 @@ if os.environ.get('FLASK_COVERAGE'):  # For checking test coverage
 # the coverage misses parts of scripts
 # pylint: disable=wrong-import-position
 from app import create_app, db, celery
-from app.models import User, Machine
+from app.models import User, Accountants
 
 try:
     with open('/run/secrets/chamber_of_secrets') as secret_chamber:
@@ -47,7 +47,7 @@ def make_shell_context():
     Returns:
         dict, takes the data and formats into a dictionary and indexes by keys
     """
-    return dict(app=app, db=db, User=User, Machine=Machine, celery=celery)
+    return dict(app=app, db=db, User=User, Accountants=Accountants, celery=celery)
 
 
 manager.add_command("shell", Shell(make_context=make_shell_context))

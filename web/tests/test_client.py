@@ -131,7 +131,7 @@ class FlaskClientTestCase(unittest.TestCase):
             'password2': 'wariotime',
         }, follow_redirects=True)
         self.assertTrue(response.status_code == 200)
-        self.assertTrue(b'Not company email' in response.data)
+        self.assertTrue(b'Not an allowed email domain' in response.data)
 
     def test_used_account_register(self):
         """

@@ -13,7 +13,7 @@ from .. import db, cache, watchdog, celery
 from . import api_0_1
 from .errors import not_acceptable, bad_request, too_many_requests, server_error
 from ..accepted_json_message import ACCEPTED_JSON
-from ..models import Machine
+from ..models import Accountants
 import strict_rfc3339
 
 @api_0_1.after_request
@@ -94,7 +94,7 @@ def get_posts():
     """
     page = request.args.get('page', 1, type=int)
     # paginate response
-    pagination = db.session.query(Machine).order_by(desc(Machine.datetime)).paginate(
+    pagination = db.session.query(Accountants).order_by(desc(Accountants.datetime)).paginate(
         page, per_page=current_app.config['POSTS_PER_PAGE'], error_out=False)
     page_items = pagination.items
     prev_pg = None
@@ -217,7 +217,7 @@ def get_post(start_time, end_time):
 
         if not no_redis_connection:
             if cache.get(strtime) is None:
-                data_query = Machine.query.filter_by(
+                data_query = Accountants.query.filter_by(
                     datetime=strtime).first()
                 if data_query is not None:
                     try:
@@ -229,7 +229,7 @@ def get_post(start_time, end_time):
             else:
                 data.append(cache.get(strtime))
         else:
-            data_query = Machine.query.filter_by(datetime=strtime).first()
+            data_query = Accountants.query.filter_by(datetime=strtime).first()
             if data_query is not None:
                 try:
                     raw_data = data_query.to_json()
@@ -344,18 +344,18 @@ def new_post():
         return jsonify(
             {'response': '200 OK', 'message': 'Heartbeat received.'}), 200
 
-    json_post = Machine.flatten(json_data)
-    flattened_accepted_json = Machine.flatten(ACCEPTED_JSON)
-    data = Machine.from_json(json_post)
+    json_post = Accountants.flatten(json_data)
+    flattened_accepted_json = Accountants.flatten(ACCEPTED_JSON)
+    data = Accountants.from_json(json_post)
     to_json_data = data.to_json()
 
-    if not Machine.is_valid_datetime(json_post):
+    if not Accountants.is_valid_datetime(json_post):
         return not_acceptable('Datetime is not in the correct format.'
                               ' It could be missing orneeds to be in the '
                               'form \'YYYY-MM-DD\'T\'HH:MM:SS\'Z '
                               '(eg. 2017-09-13T13:01:57Z)')
 
-    missing_data, invalid_sensors = Machine.invalid_data(
+    missing_data, invalid_sensors = Accountants.invalid_data(
         json_post, flattened_accepted_json)
     if len(missing_data) > 0:
         return not_acceptable('JSON has sensor data missing. '

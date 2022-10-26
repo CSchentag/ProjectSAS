@@ -11,4 +11,4 @@ from flask import Blueprint
 # pylint: disable=invalid-name
 api_0_1 = Blueprint('api_0_1', __name__)
 
-from . import machine_posts, errors, authentication
+from . import accountants_posts, errors, authentication
