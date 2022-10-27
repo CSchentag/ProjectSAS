@@ -91,6 +91,7 @@ def manual_json_post():
             db.session.add(data)
             db.session.commit()
         except sqlalchemy.exc.IntegrityError:
+            db.session.rollback()
             is_dict = False
             dict_error = (
                 "There was a unique constraint error,"

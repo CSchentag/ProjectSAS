@@ -3,6 +3,7 @@ import re
 import time
 import json
 import unittest
+import sqlalchemy
 from flask import url_for, current_app
 from app import create_app, db
 from app.models import User
@@ -672,7 +673,7 @@ class FlaskClientTestCase(unittest.TestCase):
     # TEST JSON POST TO WEBPAGE
 
     def test_json_post_unique_accountant_id_error(self):
-        """Check error is thrown if datetime is aready in the database"""
+        """Check error is thrown if an email is already in the database"""
         self.login()
         data = {}
         data['json_message'] = self.EXAMPLE_COMPACT_JSON_MESSAGE

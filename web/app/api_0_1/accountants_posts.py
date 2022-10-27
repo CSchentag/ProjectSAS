@@ -94,7 +94,7 @@ def get_posts():
     """
     page = request.args.get('page', 1, type=int)
     # paginate response
-    pagination = db.session.query(Accountants).order_by(desc(Accountants.datetime)).paginate(
+    pagination = db.session.query(Accountants).order_by(desc(Accountants.name)).paginate(
         page, per_page=current_app.config['POSTS_PER_PAGE'], error_out=False)
     page_items = pagination.items
     prev_pg = None
@@ -111,135 +111,6 @@ def get_posts():
     })
 
 
-@api_0_1.route('/posts/<start_time>/<end_time>')
-def get_post(start_time, end_time):
-    """
-    Get a single post and convert to json.
-
-    Args:
-        start_time: Beginning time of window of data being queried
-        end_time: End time of window of data being queried
-
-    Returns:
-        Data for a specific period of time. It will output a list of jsons,
-        outputting the data if found and outputting 'data not found' if
-        that time was not found in database.
-
-
-    .. :quickref: Data Window; Get window of data
-
-    **Example request**:
-
-    Shell command:
-
-    *with email/password:*
-
-    .. sourcecode:: shell
-
-        curl --user <email>:<password> -X GET https://localhost/api/v0.1/posts/2017-09-13T13:01:57Z/2017-09-13T13:01:59Z
-
-    *or with token:*
-
-    .. sourcecode:: shell
-
-        curl --user <token>: -X GET https://localhost/api/v0.1/posts/2017-09-13T13:01:57Z/2017-09-13T13:01:59Z
-
-    Command response:
-
-    .. sourcecode:: http
-
-        GET /api/v0.1/posts/2017-09-13T13:01:57Z/2017-09-13T13:01:59Z HTTP/1.1
-        localhost
-        Authorization: Basic <b64 encoded email:password or token:>
-
-    **Example response**:
-
-    .. sourcecode:: http
-
-        HTTP/1.1 200 OK
-        Content-Type: application/json
-
-        [
-            {
-                "JSON_message":"goes_here"
-                },
-            {
-                "next_JSON_message":"goes_here"
-                }
-        ]
-
-    *(JSON cut for length)*
-
-   :query start_time: Beginning time of window of data being queried
-   :query end_time: End time of window of data being queried
-   :reqheader Authorization: use cURL tag with <email>:<psswrd>, or <token>:
-   :resheader Content-Type: application/json
-   :statuscode 200: Successfully retrieved data
-   :statuscode 401: Invalid credentials
-   :statuscode 403: Not signed in
-
-    """
-    time_format = '%Y-%m-%dT%H:%M:%SZ'
-    start_time_stripped = datetime.strptime(start_time, time_format)
-    end = datetime.strptime(end_time, time_format)
-    time_delta = datetime.strptime(end_time, time_format) \
-        - datetime.strptime(start_time, time_format)
-
-    if not (strict_rfc3339.validate_rfc3339(start_time) and
-            strict_rfc3339.validate_rfc3339(end_time)):
-        print("Error: datetimes are not RFC 3339")
-        return bad_request('Error: Datetimes are not RFC 3339')
-
-    start_time_epoch = strict_rfc3339.rfc3339_to_timestamp(start_time)
-    end_time_epoch = strict_rfc3339.rfc3339_to_timestamp(end_time)
-    # print("start_time_epoch: {} end_time_epoch: {}".format(start_time_epoch,
-    # end_time_epoch))
-    if (end_time_epoch < start_time_epoch):
-        print("Error: end time is before start time")
-        return bad_request('Error: End time is before start time')
-
-    MAX_API_DATA_S = current_app.config['MAX_API_DATA_PER_REQUEST']
-
-    if time_delta > timedelta(seconds=MAX_API_DATA_S):
-        return too_many_requests(
-            'Request is above {} seconds of data.'.format(MAX_API_DATA_S))
-
-    end = start_time_stripped + time_delta
-    data = []
-    while start_time_stripped <= end:
-        # Until we change to 24hr time
-        strtime = start_time_stripped.strftime(time_format)
-        try:
-            cache.get(strtime)
-            no_redis_connection = False
-        except RedisError:
-            no_redis_connection = True
-
-        if not no_redis_connection:
-            if cache.get(strtime) is None:
-                data_query = Accountants.query.filter_by(
-                    datetime=strtime).first()
-                if data_query is not None:
-                    try:
-                        raw_data = data_query.to_json()
-                        data.append(raw_data)
-                        cache.set(strtime, raw_data, timeout=0)
-                    except BaseException:
-                        data.append({"Error": "Could not find data."})
-            else:
-                data.append(cache.get(strtime))
-        else:
-            data_query = Accountants.query.filter_by(datetime=strtime).first()
-            if data_query is not None:
-                try:
-                    raw_data = data_query.to_json()
-                    data.append(raw_data)
-                except BaseException:
-                    data.append({"Error": "Could not find data."})
-        start_time_stripped += timedelta(seconds=1)
-
-    return jsonify(data)
-
 @api_0_1.route('/posts/', methods=['POST'])
 def new_post():
     """
@@ -251,9 +122,6 @@ def new_post():
         bad_request if no JSON is found with message
         'There was no JSON found in the request.
         Likely the application/json'\'header was missing.'
-
-        not_acceptable if data is missing with message
-        'JSON has sensor data missing. '\ 'Sensor(s) may have been removed from network. ' and displays missing data
 
         not_acceptable if extra sensor data is found with message
         'JSON has extra sensor data, '\'sensor(s) may have been added to the network. '\
@@ -310,7 +178,6 @@ def new_post():
    :statuscode 406: Data does not match correct format (sensor deleted/added)
 
     """
-    watchdog.pet()
     try:
         if request.headers['Content-Type'] != 'application/json':
             print('Content-Type: application/json not found.')
@@ -340,56 +207,23 @@ def new_post():
                            'Likely the application/json '
                            'header was missing.')
 
-    if 'heartbeat' in json_data:
-        return jsonify(
-            {'response': '200 OK', 'message': 'Heartbeat received.'}), 200
-
     json_post = Accountants.flatten(json_data)
     flattened_accepted_json = Accountants.flatten(ACCEPTED_JSON)
     data = Accountants.from_json(json_post)
     to_json_data = data.to_json()
-
-    if not Accountants.is_valid_datetime(json_post):
-        return not_acceptable('Datetime is not in the correct format.'
-                              ' It could be missing orneeds to be in the '
-                              'form \'YYYY-MM-DD\'T\'HH:MM:SS\'Z '
-                              '(eg. 2017-09-13T13:01:57Z)')
-
-    missing_data, invalid_sensors = Accountants.invalid_data(
-        json_post, flattened_accepted_json)
-    if len(missing_data) > 0:
-        return not_acceptable('JSON has sensor data missing. '
-                              'Sensor(s) may have been removed from network. '
-                              'Sensor(s) with missing '
-                              'data: ' + str(missing_data))
-
-    if len(invalid_sensors) > 0:
-        return not_acceptable('JSON has extra sensor data, '
-                              'sensor(s) may have been added to network. '
-                              'Sensor(s) not found in the '
-                              'database: ' + str(invalid_sensors))
 
     """
     Set datetime key in cache if it doesn't already exist.
     Try to commit it to the database if it wasn't in cache already.
     """
     try:
-        if cache.get(json_post['datetime']) is None:
-            cache.set(json_post['datetime'], to_json_data,
-                      timeout=0)
-            try:
-                db.session.add(data)
-                db.session.commit()
-            except sqlalchemy.exc.IntegrityError:
-                return not_acceptable(
-                    'A unique id error was returned. '
-                    'This datetime is already in the database.')
-        else:
-            return not_acceptable('This datetime is already in cache.')
-    except RedisError as e:
-        print(e)
-        print('Redis port may be closed, the redis server does '
-              'not appear to be running.')
+        db.session.add(data)
+        db.session.commit()
+    except sqlalchemy.exc.IntegrityError:
+        db.session.rollback()
+        return not_acceptable(
+            'A unique id error was returned. '
+            'This data is already in the database.')
 
     return jsonify(
         {'response': '201 data created',

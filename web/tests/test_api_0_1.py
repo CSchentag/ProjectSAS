@@ -242,33 +242,12 @@ class API2TestCase(unittest.TestCase):
         db.session.add(user)
         db.session.commit()
 
-        # write three posts to check time loop api get
+        # write a test post
         response = self.client.post(
             url_for('api_0_1.new_post'),
             headers=self.get_api_headers('bill.nye@'+current_app.config['MAIL_DOMAIN'],
                                          'TheScienceGuy', True),
             data=json.dumps(self.EXAMPLE_JSON_MESSAGE))
-        self.assertTrue(response.status_code == 201)
-
-        example_json = self.EXAMPLE_JSON_MESSAGE
-        example_json["datetime"] = "2017-09-13T13:01:58Z"
-
-        response = self.client.post(
-            url_for('api_0_1.new_post'),
-            headers=self.get_api_headers('bill.nye@'+current_app.config['MAIL_DOMAIN'],
-                                         'TheScienceGuy', True),
-            data=json.dumps(example_json))
-        self.assertTrue(response.status_code == 201)
-
-        example_json = self.EXAMPLE_JSON_MESSAGE
-        latest_datetime = "2017-09-13T13:03:00Z"
-        example_json["datetime"] = latest_datetime
-
-        response = self.client.post(
-            url_for('api_0_1.new_post'),
-            headers=self.get_api_headers('bill.nye@'+current_app.config['MAIL_DOMAIN'],
-                                         'TheScienceGuy', True),
-            data=json.dumps(example_json))
         self.assertTrue(response.status_code == 201)
 
         # Check data of post
@@ -278,34 +257,9 @@ class API2TestCase(unittest.TestCase):
                                          'TheScienceGuy'))
         self.assertTrue(response.status_code == 200)
         json_response = json.loads(response.data.decode('utf-8'))
-        self.assertTrue(json_response['data'][0]['datetime'] ==
-                        latest_datetime
+        self.assertTrue(json_response['data'][0]['email'] ==
+                        "tschentag@gmail.com"
                         )
-
-        # Test getting a specific number of posts (between two time slots)
-        response = self.client.get(
-            url_for('api_0_1.get_post',
-                    start_time='2017-09-13T13:01:57Z',
-                    end_time='2017-09-13T13:01:59Z'),
-            headers=self.get_api_headers('bill.nye@'+current_app.config['MAIL_DOMAIN'],
-                                         password='TheScienceGuy'))
-        self.assertTrue(b'2017-09-13T13:01:58Z' in response.data)
-
-    def test_too_many_requests_get_posts(self):
-        """Test too many seconds  are requested for get posts"""
-        # add user
-        user = User(email='bill.nye@'+current_app.config['MAIL_DOMAIN'],
-                    password='TheScienceGuy',
-                    confirmed=True)
-        db.session.add(user)
-        db.session.commit()
-        response = self.client.get(
-            url_for('api_0_1.get_post',
-                    start_time='2017-09-13T13:01:57Z',
-                    end_time='2018-09-13T13:01:59Z'),
-            headers=self.get_api_headers('bill.nye@'+current_app.config['MAIL_DOMAIN'],
-                                         password='TheScienceGuy'))
-        self.assertTrue(b'Request is above 1800' in response.data)
 
     def test_compact_posts(self):
         """same as test_posts but using example_compact.json"""
@@ -330,7 +284,7 @@ class API2TestCase(unittest.TestCase):
                                          'TheScienceGuy'))
         self.assertTrue(response.status_code == 200)
         json_response = json.loads(response.data.decode('utf-8'))
-        self.assertTrue(json_response['data'][0]['datetime'] == self.EXAMPLE_COMPACT_JSON_MESSAGE["datetime"])
+        self.assertTrue(json_response['data'][0]['email'] == self.EXAMPLE_COMPACT_JSON_MESSAGE["email"])
 
     def test_empty_posts(self):
         """Send empty body message"""
@@ -362,163 +316,7 @@ class API2TestCase(unittest.TestCase):
             data=json.dumps(self.EXAMPLE_JSON_MESSAGE))
         self.assertTrue(response.status_code == 400)
 
-    def test_pagination(self):
-        """Test pagination works correctly with a large number of posts"""
-        user = User(email='Connor.schentag@'+current_app.config['MAIL_DOMAIN'],
-                    password='TheIntern',
-                    confirmed=True)
-        db.session.add(user)
-        db.session.commit()
-        i = 2000
-
-        example_json = self.EXAMPLE_JSON_MESSAGE
-        example_json["datetime"] = "2017-09-13T13:02:00Z"
-        # Make enough posts to cause pagination
-        for _ in range(current_app.config['POSTS_PER_PAGE'] + 2):
-            example_json["datetime"] = "%s-09-13T13:02:00Z" % i
-
-            response = self.client.post(
-                url_for('api_0_1.new_post'),
-                headers=self.get_api_headers('Connor.schentag@'+current_app.config['MAIL_DOMAIN'],
-                                             'TheIntern', True),
-                data=json.dumps(example_json))
-            self.assertTrue(response.status_code == 201)
-            i += 1
-
-        # Check that the next page url is not none
-        response = self.client.get(
-            url_for('api_0_1.get_posts'),
-            headers=self.get_api_headers('Connor.schentag@'+current_app.config['MAIL_DOMAIN'],
-                                         'TheIntern'))
-        self.assertTrue(response.status_code == 200)
-        json_response = json.loads(response.data.decode('utf-8'))
-        self.assertTrue(json_response['next'] is not None)
-
-        # After moving to the next page, check that the url is now none
-        response = self.client.get(
-            json_response['next'],
-            headers=self.get_api_headers('Connor.schentag@'+current_app.config['MAIL_DOMAIN'],
-                                         'TheIntern'))
-        self.assertTrue(response.status_code == 200)
-        json_response = json.loads(response.data.decode('utf-8'))
-        self.assertTrue(json_response['next'] is None)
-
-    def test_heartbeat(self):
-        """Test a heartbeat message is successfully responded to"""
-        user = User(email='brent.leroy@'+current_app.config['MAIL_DOMAIN'],
-                    password='cornergandtherub',
-                    confirmed=True)
-        db.session.add(user)
-        db.session.commit()
-
-        heartbeat_json = {"datetime":"2017-08-11T18:39:45Z","heartbeat":"beep"}
-
-        response = self.client.post(
-            url_for('api_0_1.new_post'),
-            headers=self.get_api_headers('brent.leroy@'+current_app.config['MAIL_DOMAIN'],
-                                         'cornergandtherub', True),
-            data=json.dumps(heartbeat_json))
-        self.assertTrue(response.status_code == 200)
-        self.assertTrue(b'Heartbeat received' in response.data)
-
-    # TEST MISSING DATA
-
-    def test_sensors_missing(self):
-        """Test warning is sent if None values in return JSON"""
-        user = User(email='jim.halpert@'+current_app.config['MAIL_DOMAIN'],
-                    password='BigTuna',
-                    confirmed=True)
-        db.session.add(user)
-        db.session.commit()
-
-        #example_json_with_removed_item = self.EXAMPLE_JSON_MESSAGE
-        example_json_with_removed_item = {"datetime":"2017-08-11T18:39:45Z","sensor_1":"None"}
-        response = self.client.post(
-            url_for('api_0_1.new_post'),
-            headers=self.get_api_headers('jim.halpert@'+current_app.config['MAIL_DOMAIN'],
-                                         'BigTuna', True),
-            data=json.dumps(example_json_with_removed_item))
-        self.assertTrue(response.status_code == 406)
-
-    def test_sensors_added(self):
-        """Test warning is sent if extra items are found in JSON"""
-        user = User(email='michael.scott@'+current_app.config['MAIL_DOMAIN'],
-                    password='AgentMichaelScarn',
-                    confirmed=True)
-        db.session.add(user)
-        db.session.commit()
-
-        example_json_with_added_item = self.EXAMPLE_JSON_MESSAGE
-        example_json_with_added_item['extra_sensor'] = 'dog'
-
-        response = self.client.post(
-            url_for('api_0_1.new_post'),
-            headers=self.get_api_headers('michael.scott@'+current_app.config['MAIL_DOMAIN'],
-                                         'AgentMichaelScarn', True),
-            data=json.dumps(example_json_with_added_item))
-        self.assertTrue(response.status_code == 406)
-
     # TEST DATETIME/UNIQUE KEY ERRORS
-
-    def test_missing_datetime(self):
-        """Missing datetime is caught seperately"""
-        user = User(email='hank.yarbo@'+current_app.config['MAIL_DOMAIN'],
-                    password='dogriver',
-                    confirmed=True)
-        db.session.add(user)
-        db.session.commit()
-
-        response = self.client.post(
-            url_for('api_0_1.new_post'),
-            headers=self.get_api_headers('hank.yarbo@'+current_app.config['MAIL_DOMAIN'],
-                                         'dogriver', True),
-            data=json.dumps({"date-tme": "2017-08-11T18:39:45Z"}))
-        self.assertTrue(b'Datetime is not in the correct ' in response.data)
-
-    def test_bad_datetime_formatting(self):
-        """Test error is thrown if datetime is not in rfc3339 format."""
-        user = User(email='luke.skywalker@'+current_app.config['MAIL_DOMAIN'],
-                    password='ThatsImpossible',
-                    confirmed=True)
-        db.session.add(user)
-        db.session.commit()
-
-        bad_datetime_json = self.EXAMPLE_JSON_MESSAGE
-        bad_datetime_json["datetime"] = "201709-13T13:01:58Z"
-
-        response = self.client.post(
-            url_for('api_0_1.new_post'),
-            headers=self.get_api_headers('luke.skywalker@'+current_app.config['MAIL_DOMAIN'],
-                                         'ThatsImpossible', True),
-            data=json.dumps(bad_datetime_json))
-        self.assertTrue(response.status_code == 406)
-        self.assertTrue(b'Datetime is not in the correct' in response.data)
-
-    def test_same_post_cache(self):
-        """
-        Check that an error will be thrown if the
-        datetime primary key is already in the database
-        """
-        user = User(email='yoda@'+current_app.config['MAIL_DOMAIN'],
-                    password='DoOrDoNot',
-                    confirmed=True)
-        db.session.add(user)
-        db.session.commit()
-
-        response = self.client.post(
-            url_for('api_0_1.new_post'),
-            headers=self.get_api_headers('yoda@'+current_app.config['MAIL_DOMAIN'],
-                                         'DoOrDoNot', True),
-            data=json.dumps(self.EXAMPLE_JSON_MESSAGE))
-        self.assertTrue(response.status_code == 201)
-
-        response = self.client.post(
-            url_for('api_0_1.new_post'),
-            headers=self.get_api_headers('yoda@'+current_app.config['MAIL_DOMAIN'],
-                                         'DoOrDoNot', True),
-            data=json.dumps(self.EXAMPLE_JSON_MESSAGE))
-        self.assertTrue(b'This datetime is already in cache' in response.data)
-        self.assertTrue(response.status_code == 406)
 
     def test_same_post_database(self):
         """
@@ -549,5 +347,5 @@ class API2TestCase(unittest.TestCase):
             headers=self.get_api_headers('yoda@'+current_app.config['MAIL_DOMAIN'],
                                          'DoOrDoNot', True),
             data=json.dumps(self.EXAMPLE_JSON_MESSAGE))
-        self.assertTrue(b'This datetime is already in the database.' in response.data)
+        self.assertTrue(b'This data is already in the database.' in response.data)
         self.assertTrue(response.status_code == 406)
