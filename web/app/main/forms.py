@@ -1,7 +1,7 @@
 """Creates HTML webforms, using WTForms"""
 from flask_wtf import FlaskForm
-from wtforms import SubmitField, TextAreaField, BooleanField
-from wtforms.validators import Required
+from wtforms import SubmitField, TextAreaField, BooleanField, EmailField, TelField, StringField
+from wtforms.validators import DataRequired
 
 
 class JSONForm(FlaskForm):
@@ -13,7 +13,7 @@ class JSONForm(FlaskForm):
         json_message (obj): Allows user to input message into a TextAreaField.
         submit (obj): Takes the message from the TextAreaField and relays it.
     """
-    json_message = TextAreaField("JSON Message", validators=[Required()])
+    json_message = TextAreaField("JSON Message", validators=[DataRequired()])
     submit = SubmitField('Submit')
 
 
@@ -21,4 +21,21 @@ class SearchEnableForm(FlaskForm):
     search_enable = BooleanField(
         "Enable search (disables table auto-update)",
         default=False)
+    submit = SubmitField('Submit')
+
+
+class AddAccountantForm(FlaskForm):
+    """
+    AddAccountantForm is a multi-box HTML Form used to
+    add a new Accountant datafile to the database.
+
+    Attribtues:
+
+    """
+    name = StringField('Full Name', validators=[DataRequired()])
+    email = EmailField('Email', validators=[DataRequired()])
+    phone_num = TelField('Phone Number', validators=[DataRequired()])
+    company = StringField('Company', validators=[DataRequired()])
+    specialty = StringField('Specialty', validators=[DataRequired()])
+    about_me = StringField('About')
     submit = SubmitField('Submit')

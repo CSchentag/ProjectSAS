@@ -2,7 +2,7 @@
 from sqlalchemy import func
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
-from wtforms.validators import Required, Email, Length, Regexp, EqualTo
+from wtforms.validators import DataRequired, Email, Length, Regexp, EqualTo
 from wtforms import ValidationError
 from ..models import User
 from flask import current_app
@@ -18,10 +18,10 @@ class LoginForm(FlaskForm):
         remember_me: takes account of the user's to remain logged in, or not
         submit: takes the user's decision to 'Log In'
     """
-    email = StringField('Email', validators=[Required(),
+    email = StringField('Email', validators=[DataRequired(),
                                              Length(1, 64),
                                              Email()])
-    password = PasswordField('Password', validators=[Required()])
+    password = PasswordField('Password', validators=[DataRequired()])
     remember_me = BooleanField('Keep me logged in')
     submit = SubmitField('Log In')
 
@@ -39,18 +39,18 @@ class RegistrationForm(FlaskForm):
         submit: takes the user's decision to 'Register'
     """
     email = StringField('Email', validators=[
-        Required(), Length(1, 64), Email(),
+        DataRequired(), Length(1, 64), Email(),
         Regexp('^([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})*$',
                0, 'Invalid email address.')])
     username = StringField('Username', validators=[
-        Required(), Length(1, 64), Regexp('^[A-Za-z][A-Za-z0-9_.]*$',
+        DataRequired(), Length(1, 64), Regexp('^[A-Za-z][A-Za-z0-9_.]*$',
                                           0, 'Usernames must have only '
                                           'letters, '
                                           'numbers, dots or underscores.')])
     password = PasswordField('Password', validators=[
-        Required(), Length(8, 64),
+        DataRequired(), Length(8, 64),
         EqualTo('password2', message='Passwords must match.')])
-    password2 = PasswordField('Confirm password', validators=[Required()])
+    password2 = PasswordField('Confirm password', validators=[DataRequired()])
     submit = SubmitField('Register')
 
     # pylint: disable=no-self-use
@@ -100,10 +100,10 @@ class ChangePasswordForm(FlaskForm):
         password2: Check of the new password
         submit: Button that submits the request
     """
-    old_password = PasswordField('Old password', validators=[Required()])
+    old_password = PasswordField('Old password', validators=[DataRequired()])
     password = PasswordField('New password', validators=[
-        Required(), EqualTo('password2', message='Passwords must match')])
-    password2 = PasswordField('Confirm new password', validators=[Required()])
+        DataRequired(), EqualTo('password2', message='Passwords must match')])
+    password2 = PasswordField('Confirm new password', validators=[DataRequired()])
     submit = SubmitField('Update Password')
 
 
@@ -115,7 +115,7 @@ class PasswordResetRequestForm(FlaskForm):
         email: enter the email that the reset link will be sent to
         submit: Submit the request
     """
-    email = StringField('Email', validators=[Required(), Length(1, 64),
+    email = StringField('Email', validators=[DataRequired(), Length(1, 64),
                                              Email()])
     submit = SubmitField('Reset Password')
 
@@ -145,11 +145,11 @@ class PasswordResetForm(FlaskForm):
         password2: check the new password
         submit: submit the request
     """
-    email = StringField('Email', validators=[Required(), Length(1, 64),
+    email = StringField('Email', validators=[DataRequired(), Length(1, 64),
                                              Email()])
     password = PasswordField('New Password', validators=[
-        Required(), EqualTo('password2', message='Passwords must match')])
-    password2 = PasswordField('Confirm password', validators=[Required()])
+        DataRequired(), EqualTo('password2', message='Passwords must match')])
+    password2 = PasswordField('Confirm password', validators=[DataRequired()])
     submit = SubmitField('Reset Password')
 
     # pylint: disable=no-self-use
@@ -176,7 +176,7 @@ class SetAppPasswordRequestForm(FlaskForm):
         email: enter the email that the reset link will be sent to
         submit: Submit the request
     """
-    email = StringField('Email', validators=[Required(), Length(1, 64),
+    email = StringField('Email', validators=[DataRequired(), Length(1, 64),
                                              Email()])
     submit = SubmitField('Set App Password')
 
@@ -206,11 +206,11 @@ class SetAppPasswordForm(FlaskForm):
         password2: check the new password
         submit: submit the request
     """
-    email = StringField('Email', validators=[Required(), Length(1, 64),
+    email = StringField('Email', validators=[DataRequired(), Length(1, 64),
                                              Email()])
     password = PasswordField('New Password', validators=[
-        Required(), EqualTo('password2', message='Passwords must match')])
-    password2 = PasswordField('Confirm password', validators=[Required()])
+        DataRequired(), EqualTo('password2', message='Passwords must match')])
+    password2 = PasswordField('Confirm password', validators=[DataRequired()])
     submit = SubmitField('Set App Password')
 
     # pylint: disable=no-self-use

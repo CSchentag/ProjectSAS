@@ -6,10 +6,10 @@
 import json
 import sqlalchemy
 from sqlalchemy import desc
-from flask import request, render_template, current_app
+from flask import request, render_template, current_app, redirect, flash
 from flask_login import login_required
 from redis import RedisError
-from .forms import JSONForm, SearchEnableForm
+from .forms import JSONForm, SearchEnableForm, AddAccountantForm
 from . import main
 from .. import db, cache, watchdog
 from ..accepted_json_message import ACCEPTED_JSON
@@ -57,6 +57,23 @@ def show_Accountants_data():
     return render_template('viewdata.html', accountants=accountants)
 
 
+@main.route("/addaccountant", methods=['GET', 'POST'])
+@login_required
+def add_accountant_post():
+    """
+    Put data in database via Form
+
+    Returns:
+        render_template which puts all the data in the
+        website database via accountant_form_post.html.
+    """
+    form = AddAccountantForm()
+    if form.validate_on_submit():
+        print(form)
+        flash("received data")
+    return render_template('accountant_form_post.html', form=form)
+
+
 @main.route("/manualjsonpostdata", methods=['GET', 'POST'])
 @login_required
 def manual_json_post():
@@ -65,7 +82,7 @@ def manual_json_post():
 
     Returns:
         render_template which puts all the data in the website
-        database via json_pot.html.
+        database via json_post.html.
     """
     form = JSONForm()
     is_dict = None
