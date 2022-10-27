@@ -2,6 +2,7 @@
 from flask_wtf import FlaskForm
 from wtforms import SubmitField, TextAreaField, BooleanField, EmailField, TelField, StringField
 from wtforms.validators import DataRequired
+from ..models import Accountants
 
 
 class JSONForm(FlaskForm):
@@ -39,3 +40,15 @@ class AddAccountantForm(FlaskForm):
     specialty = StringField('Specialty', validators=[DataRequired()])
     about_me = StringField('About')
     submit = SubmitField('Submit')
+
+    """
+    def validate_phone_num(self, phone_num):
+        accountant = Accountants.query.filter_by(phone_num=phone_num.data).first()
+        if accountant is not None:
+            raise ValidationError('The phone number is already in use. Please use another.')
+
+    def validate_email(self, email):
+        accountant = Accountants.query.filter_by(email=email.data).first()
+        if accountant is not None:
+            raise ValidationError('The email is already in use. Please use another. ')
+    """

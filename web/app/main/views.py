@@ -69,8 +69,19 @@ def add_accountant_post():
     """
     form = AddAccountantForm()
     if form.validate_on_submit():
-        print(form)
-        flash("received data")
+        accountant = Accountants(name=form.name.data,
+                                email=form.email.data,
+                                phone_num=form.phone_num.data,
+                                company=form.company.data,
+                                specialty = form.specialty.data,
+                                about_me = form.about_me.data)
+        try:
+            db.session.add(accountant)
+            db.session.commit()
+            flash("The user has been added to the database.")
+        except sqlalchemy.exc.IntegrityError:
+            db.session.rollback()
+            flash("There as an error adding the user to the database - the email or phone number is already in use.")
     return render_template('accountant_form_post.html', form=form)
 
 
