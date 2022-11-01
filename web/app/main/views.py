@@ -6,7 +6,7 @@
 import json
 import sqlalchemy
 from sqlalchemy import desc
-from flask import request, render_template, current_app, redirect, flash
+from flask import request, render_template, current_app, redirect, flash, jsonify
 from flask_login import login_required
 from redis import RedisError
 from .forms import JSONForm, SearchEnableForm, AddAccountantForm
@@ -29,32 +29,23 @@ def index():
 
 @main.route("/viewdata", methods=['GET', 'POST'])
 @login_required
-def show_Accountants_data():
+def show_Accountants():
     """
-    Outputs all Accountants post table data to an HTML table
+    Outputs all Accounts data to an Ajax rendered table.
 
     Returns:
-        render_template, which allows a user to view all the data on
-        the website via viewdata.html.
+        render_template, which allows a user to view the data
+        via a javascript table.
     """
-    accountants_columns = Accountants.__table__.columns.keys()  # Grabs column headers
-    page = request.args.get('page', 1, type=int)
-    pagination = db.session.query(Accountants).order_by(desc(Accountants.name)).paginate(  # paginates response
-        page, per_page=current_app.config['POSTS_PER_PAGE'], error_out=False)
-    page_items = pagination.items
-    # need to convert the sql query to something iterable in the table
-    # no coverage here but is tested via same function in api_0_1.Accountants_post
-    dict_list = []
-    for item in page_items:
-        d = {}
-        for column in item.__table__.columns:
-            d[column.name] = str(getattr(item, column.name))
-        dict_list.append(d)
-    data = []
-    for item in dict_list:
-        data.append(list((item).values()))
-    accountants = Accountants.query
-    return render_template('viewdata.html', accountants=accountants)
+    return render_template('ajaxtable.html', title="Ajax Table")
+
+
+@main.route("/api/data", methods=['GET', 'POST'])
+@login_required
+def accountant_data():
+    data = {'data': [accountant.to_json() for accountant in Accountants.query]}
+    print(type(data))
+    return jsonify(data)
 
 
 @main.route("/addaccountant", methods=['GET', 'POST'])

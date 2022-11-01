@@ -7,9 +7,7 @@
 {% block styles -%}
 	{{ super() }}
 	<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
-	<!--
-	<link href="https://cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css" rel="stylesheet">
-	-->
+	<link href="https://cdn.datatables.net/1.10.25/css/dataTables.bootstrap5.css" rel="stylesheet">
 {% endblock styles %}
 
 {% block navbar %}
@@ -69,6 +67,8 @@
 {% block scripts %}
 {{ super() }}
 
-<script src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.25/js/dataTables.bootstrap5.js"></script>
 
 {% endblock %}
