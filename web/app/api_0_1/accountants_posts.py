@@ -32,11 +32,10 @@ def after_request(response):
 @api_0_1.route('/posts/')
 def get_posts():
     """
-    Get all posts in the database. The result will be paginated if there
-    are many results.
+    Get all posts in the database.
 
     Returns:
-        jsonify, whose data has now been paginated
+        jsonify
 
     .. :quickref: All Data; Get all data
 
@@ -92,23 +91,8 @@ def get_posts():
    :statuscode 403: Not signed in
 
     """
-    page = request.args.get('page', 1, type=int)
-    # paginate response
-    pagination = db.session.query(Accountants).order_by(desc(Accountants.name)).paginate(
-        page, per_page=current_app.config['POSTS_PER_PAGE'], error_out=False)
-    page_items = pagination.items
-    prev_pg = None
-    if pagination.has_prev:  # shows link to previous page
-        prev_pg = url_for('api_0_1.get_posts', page=page - 1, _external=True)
-    next_pg = None
-    if pagination.has_next:  # shows linke to next page
-        next_pg = url_for('api_0_1.get_posts', page=page + 1, _external=True)
-    return jsonify({
-        'data': [item.to_json() for item in page_items],
-        'prev': prev_pg,
-        'next': next_pg,
-        'count': pagination.total
-    })
+    data = {'data': [accountant.to_json() for accountant in Accountants.query]}
+    return jsonify(data)
 
 
 @api_0_1.route('/posts/', methods=['POST'])

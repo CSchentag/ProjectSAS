@@ -49,20 +49,20 @@ def auth_error():
     return unauthorized('Invalid credentials')
 
 
-@api_0_1.before_request
-@auth.login_required
-def before_request():
-    """
-    Checks that the API user is signed in before any requests are made
+# @api_0_1.before_request
+# @auth.login_required
+# def before_request():
+#     """
+#     Checks that the API user is signed in before any requests are made
 
-    Returns:
-        forbidden, which displays the message 'Not signed in'
-    """
-    if g.current_user.is_anonymous:
-        return forbidden('Not signed in')
+#     Returns:
+#         forbidden, which displays the message 'Not signed in'
+#     """
+#     if g.current_user.is_anonymous:
+#         return forbidden('Not signed in')
 
-    if not g.current_user.confirmed:
-        return forbidden('Unconfirmed account')
+#     if not g.current_user.confirmed:
+#         return forbidden('Unconfirmed account')
 
 
 @api_0_1.route('/token')

@@ -9,6 +9,7 @@ from flask import current_app
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin, AnonymousUserMixin
+from hashlib import md5
 from . import db, login_manager
 
 
@@ -225,6 +226,11 @@ class Accountants(db.Model):
     specialty = db.Column(db.String(128))
     about_me = db.Column(db.String(140))
 
+    @property
+    def avatar_url(self):
+        digest = md5(self.email.lower().encode('utf-8')).hexdigest()
+        return f'https://www.gravatar.com/avatar/{digest}?d=identicon'
+
     @staticmethod
     def flatten(dictionary, parent_key='', sep='__'):
         """
@@ -307,7 +313,8 @@ class Accountants(db.Model):
             'phone_num': self.phone_num,
             'company': self.company,
             'specialty': self.specialty,
-            'about_me': self.about_me
+            'about_me': self.about_me,
+            'avatar' : self.avatar_url
         }
         return json_post
 

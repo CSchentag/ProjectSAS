@@ -6,6 +6,7 @@ import os
 import sys
 from flask_script import Manager, Shell
 from flask_migrate import Migrate, MigrateCommand
+from flask_cors import CORS
 COV = None
 if os.environ.get('FLASK_COVERAGE'):  # For checking test coverage
     import coverage
@@ -36,6 +37,7 @@ except OSError as e:
     print('EXITING.')
     sys.exit(-1)
 app = create_app(FLASK_CONFIG)
+CORS(app)
 manager = Manager(app)
 migrate = Migrate(app, db)
 

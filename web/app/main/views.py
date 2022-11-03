@@ -44,7 +44,6 @@ def show_Accountants():
 @login_required
 def accountant_data():
     data = {'data': [accountant.to_json() for accountant in Accountants.query]}
-    print(type(data))
     return jsonify(data)
 
 
@@ -72,7 +71,7 @@ def add_accountant_post():
             flash("The user has been added to the database.")
         except sqlalchemy.exc.IntegrityError:
             db.session.rollback()
-            flash("There as an error adding the user to the database - the email or phone number is already in use.")
+            flash("There was an error adding the user to the database - the email or phone number is already in use.")
     return render_template('accountant_form_post.html', form=form)
 
 
