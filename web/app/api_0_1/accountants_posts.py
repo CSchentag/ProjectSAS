@@ -91,7 +91,20 @@ def get_accountants():
    :statuscode 403: Not signed in
 
     """
-    data = {'data': [accountant.to_json() for accountant in Accountants.query]}
+    query_result_list = [accountant.to_json() for accountant in Accountants.query]
+    for query_result in query_result_list:
+        # this is for the sake of unique URLs in the frontend
+        query_result['username'] = (query_result['email']).split('@')[0]
+    data = {'data': query_result_list}
+    return jsonify(data)
+
+
+@api_0_1.route('/accountants/<username>', methods=['GET'])
+def get_accountant_info(username):
+    accountant = Accountants.query.filter(Accountants.email.contains(username)).first()
+    json_data = accountant.to_json()
+    json_data['username'] = (json_data['email']).split('@')[0]
+    data = {'data': json_data}
     return jsonify(data)
 
 

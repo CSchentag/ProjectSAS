@@ -16,7 +16,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<FeedPage />} />
           <Route path="/explore" element={<ExplorePage />} />
-          <Route path="/accountant/:username" element={<UserPage />} />
+          <Route path="/accountants/:username" element={<UserPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
