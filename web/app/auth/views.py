@@ -113,11 +113,11 @@ def oauth_callback(provider):
         flash('Authentication failed.')
         return redirect(url_for('main.index'))
     email = email.lower()
+    print(email)
     user = User.query.filter(func.lower(User.email)==email).first()
     if not user:
-        if username is None or username == "":
-            # if a username is not found, it pulls it from the email
-            username = email.split('@')[0]
+        # username is pulled from the email
+        username = email.split('@')[0]
         # checks for correct email domain, fails if it isn't
         if email.split('@')[1] != current_app.config['MAIL_DOMAIN']:
             flash('You cannot login with this email.')

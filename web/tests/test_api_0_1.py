@@ -110,7 +110,7 @@ class API2TestCase(unittest.TestCase):
 
         # write post
         response = self.client.post(
-            url_for('api_0_1.new_post'),
+            url_for('api_0_1.new_accountant'),
             headers=self.get_api_headers('darth.vader@'+current_app.config['MAIL_DOMAIN'],
                                          'Iamyourfather', True),
             data='lol')
@@ -121,14 +121,14 @@ class API2TestCase(unittest.TestCase):
     def test_no_user(self):
         """Check 401 with a user that is not registered"""
         response = self.client.get(
-            url_for('api_0_1.get_posts'),
+            url_for('api_0_1.get_accountants'),
             headers=self.get_api_headers('wayne.gretzky@'+current_app.config['MAIL_DOMAIN'],
                                          password='thegreatone'))
         self.assertTrue(response.status_code == 401)
 
     def test_no_auth(self):
         """Check 403 by not sending credentials"""
-        response = self.client.get(url_for('api_0_1.get_posts'),
+        response = self.client.get(url_for('api_0_1.get_accountants'),
                                    content_type='application/json')
         self.assertTrue(response.status_code == 403)
 
@@ -143,7 +143,7 @@ class API2TestCase(unittest.TestCase):
 
         # authenticate with bad password
         response = self.client.get(
-            url_for('api_0_1.get_posts'),
+            url_for('api_0_1.get_accountants'),
             headers=self.get_api_headers('santa.claus@'+current_app.config['MAIL_DOMAIN'],
                                          password='hahaha'))
         self.assertTrue(response.status_code == 401)
@@ -157,7 +157,7 @@ class API2TestCase(unittest.TestCase):
         db.session.commit()
 
         response = self.client.get(
-            url_for('api_0_1.get_posts'),
+            url_for('api_0_1.get_accountants'),
             headers=self.get_api_headers(
                 'indianajones@'+current_app.config['MAIL_DOMAIN'],
                 'junior'))
@@ -176,7 +176,7 @@ class API2TestCase(unittest.TestCase):
 
         # issue request with a bad token
         response = self.client.get(
-            url_for('api_0_1.get_posts'),
+            url_for('api_0_1.get_accountants'),
             headers=self.get_api_headers('bad-token', ''))
         self.assertTrue(response.status_code == 401)
 
@@ -202,7 +202,7 @@ class API2TestCase(unittest.TestCase):
 
         # issue a request with the token
         response = self.client.get(
-            url_for('api_0_1.get_posts'),
+            url_for('api_0_1.get_accountants'),
             headers=self.get_api_headers(token, ''))
         self.assertTrue(response.status_code == 200)
 
@@ -225,7 +225,7 @@ class API2TestCase(unittest.TestCase):
         db.session.commit()
 
         response = self.client.post(
-            url_for('api_0_1.new_post'),
+            url_for('api_0_1.new_accountant'),
             headers=self.header_no_content_type('fred.flinstone@'+current_app.config['MAIL_DOMAIN'],
                                                 'Wilmaaaaaaaaaa', True),
             data=json.dumps(self.EXAMPLE_JSON_MESSAGE))
@@ -244,7 +244,7 @@ class API2TestCase(unittest.TestCase):
 
         # write a test post
         response = self.client.post(
-            url_for('api_0_1.new_post'),
+            url_for('api_0_1.new_accountant'),
             headers=self.get_api_headers('bill.nye@'+current_app.config['MAIL_DOMAIN'],
                                          'TheScienceGuy', True),
             data=json.dumps(self.EXAMPLE_JSON_MESSAGE))
@@ -252,7 +252,7 @@ class API2TestCase(unittest.TestCase):
 
         # Check data of post
         response = self.client.get(
-            url_for('api_0_1.new_post'),
+            url_for('api_0_1.new_accountant'),
             headers=self.get_api_headers('bill.nye@'+current_app.config['MAIL_DOMAIN'],
                                          'TheScienceGuy'))
         self.assertTrue(response.status_code == 200)
@@ -271,7 +271,7 @@ class API2TestCase(unittest.TestCase):
         db.session.commit()
 
         response = self.client.post(
-            url_for('api_0_1.new_post'),
+            url_for('api_0_1.new_accountant'),
             headers=self.get_api_headers('bill.nye@'+current_app.config['MAIL_DOMAIN'],
                                          'TheScienceGuy', True),
             data=json.dumps(self.EXAMPLE_COMPACT_JSON_MESSAGE))
@@ -279,7 +279,7 @@ class API2TestCase(unittest.TestCase):
 
         # Check data of post
         response = self.client.get(
-            url_for('api_0_1.new_post'),
+            url_for('api_0_1.new_accountant'),
             headers=self.get_api_headers('bill.nye@'+current_app.config['MAIL_DOMAIN'],
                                          'TheScienceGuy'))
         self.assertTrue(response.status_code == 200)
@@ -296,7 +296,7 @@ class API2TestCase(unittest.TestCase):
         db.session.commit()
 
         response = self.client.post(
-            url_for('api_0_1.new_post'),
+            url_for('api_0_1.new_accountant'),
             headers=self.get_api_headers(email, password, True),
             data=json.dumps(''))
         self.assertTrue(response.status_code == 400)
@@ -311,7 +311,7 @@ class API2TestCase(unittest.TestCase):
         db.session.commit()
 
         response = self.client.post(
-            url_for('api_0_1.new_post'),
+            url_for('api_0_1.new_accountant'),
             headers=self.header_wrong_content_type(email, password),
             data=json.dumps(self.EXAMPLE_JSON_MESSAGE))
         self.assertTrue(response.status_code == 400)
@@ -330,7 +330,7 @@ class API2TestCase(unittest.TestCase):
         db.session.commit()
 
         response = self.client.post(
-            url_for('api_0_1.new_post'),
+            url_for('api_0_1.new_accountant'),
             headers=self.get_api_headers('yoda@'+current_app.config['MAIL_DOMAIN'],
                                          'DoOrDoNot', True),
             data=json.dumps(self.EXAMPLE_JSON_MESSAGE))
@@ -343,7 +343,7 @@ class API2TestCase(unittest.TestCase):
                   'does not appear to be running.')
 
         response = self.client.post(
-            url_for('api_0_1.new_post'),
+            url_for('api_0_1.new_accountant'),
             headers=self.get_api_headers('yoda@'+current_app.config['MAIL_DOMAIN'],
                                          'DoOrDoNot', True),
             data=json.dumps(self.EXAMPLE_JSON_MESSAGE))

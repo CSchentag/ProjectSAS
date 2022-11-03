@@ -29,8 +29,8 @@ def after_request(response):
     return response
 
 
-@api_0_1.route('/posts/')
-def get_posts():
+@api_0_1.route('/accountants/')
+def get_accountants():
     """
     Get all posts in the database.
 
@@ -95,8 +95,8 @@ def get_posts():
     return jsonify(data)
 
 
-@api_0_1.route('/posts/', methods=['POST'])
-def new_post():
+@api_0_1.route('/accountants/', methods=['POST'])
+def new_accountant():
     """
     Deflates json and creates a new post.
 
