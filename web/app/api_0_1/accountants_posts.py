@@ -13,7 +13,7 @@ from .. import db, cache, watchdog, celery
 from . import api_0_1
 from .errors import not_acceptable, bad_request, too_many_requests, server_error
 from ..accepted_json_message import ACCEPTED_JSON
-from ..models import Accountants
+from ..models import Accountants, User
 import strict_rfc3339
 
 @api_0_1.after_request
@@ -225,6 +225,66 @@ def new_accountant():
     return jsonify(
         {'response': '201 data created',
          'message': 'Data was successfully posted!'}), 201
+
+
+@api_0_1.route('/users/', methods=['POST'])
+def new_user():
+
+    try:
+        if request.headers['Content-Type'] != 'application/json':
+            print('Content-Type: application/json not found.')
+            current_app.logger.error(
+                'Content-Type: application/json not found.')
+            return bad_request('Content-Type: application/json not found.')
+    except KeyError as e:
+        print(e)
+        current_app.logger.error(
+            'Missing Content-Type: application/json header')
+        return bad_request('Missing Content-Type: application/json header')
+    try:
+        json_data = json.loads(request.data.decode("utf-8"))
+        if isinstance(json_data, str):
+            print("JSON message is improperly formatted.")
+            json_data = None
+    except (json.decoder.JSONDecodeError) as e:
+        print(e)
+        json_data = None
+
+    if json_data is None:
+        print('There was no JSON found in the request. '
+              'Likely the application/json is missing.')
+        current_app.logger.error('JSON Error: '
+                                 'There was no JSON decoded and found.')
+        return bad_request('There was no JSON found in the request. '
+                           'Likely the application/json '
+                           'header was missing.')
+
+    user = User(username=json_data['username'],
+                email=json_data['email'],
+                password=json_data['password'])
+    #json_post = Accountants.flatten(json_data)
+    #flattened_accepted_json = Accountants.flatten(ACCEPTED_JSON)
+    #data = Accountants.from_json(json_post)
+    #to_json_data = data.to_json()
+
+    """
+    Set datetime key in cache if it doesn't already exist.
+    Try to commit it to the database if it wasn't in cache already.
+    """
+    try:
+        db.session.add(user)
+        db.session.commit()
+    except sqlalchemy.exc.IntegrityError:
+        db.session.rollback()
+        return jsonify(
+        {'response': '406 not allowed',
+         'message': 'email or username is already in use.',
+         'errors': 'email or username is already in use.'
+         }), 406
+
+    return jsonify(
+        {'response': '201 data created',
+         'message': 'User was successfully added!'}), 201
 
 
 @api_0_1.route('/statistics/<start_time>/<end_time>', methods=['GET'])
