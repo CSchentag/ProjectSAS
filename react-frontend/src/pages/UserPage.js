@@ -14,7 +14,7 @@ export default function UserPage() {
   useEffect(() => {
     (async () => {
       const response = await api.get('/accountants/' + username);
-      setUser(response.ok ? response.body : null);
+      setUser(response.ok ? response.body.data : null);
     })();
   }, [username, api]);
 
@@ -27,7 +27,13 @@ export default function UserPage() {
           {user === null ?
             <p>User not found.</p>
           :
-          <h1>{user.name}</h1>
+            <Stack direction="horizontal" gap={4}>
+              <Image src={user.avatar + '&s=128'} roundedCircle />
+              <div>
+                <h1>{user.name}</h1>
+                {user.about_me && <h5>{user.about_me}</h5>}
+              </div>
+            </Stack>
           }
         </>
       }
