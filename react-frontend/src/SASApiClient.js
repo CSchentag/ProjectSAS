@@ -1,11 +1,26 @@
 const BASE_API_URL = process.env.REACT_APP_BASE_API_URL;
 
 export default class SASApiClient {
+  async request(options) {
+    let response = await this.requestInternal(options);
+    if (response.status === 401 && options.url !== '/tokens') {
+      const refreshResponse = await this.put('/tokens', {
+        access_token: localStorage.getItem('accessToken'),
+      });
+      if (refreshResponse.ok) {
+        localStorage.setItem('accessToken', refreshResponse.body.access_token);
+        response = await this.requestInternal(options);
+      }
+    }
+    return response;
+  }
+
   constructor() {
     this.base_url =  BASE_API_URL + '/api/v0.1';
   }
 
-  async request(options) {
+
+  async requestInternal(options) {
     let query = new URLSearchParams(options.query || {}).toString();
     if (query !== '') {
       query = '?' + query;
@@ -17,8 +32,10 @@ export default class SASApiClient {
         method: options.method,
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + localStorage.getItem('accessToken'),
           ...options.headers,
         },
+        credentials: options.url === '/tokens' ? 'include' : 'omit',
         body: options.body ? JSON.stringify(options.body) : null,
       });
     }
@@ -55,5 +72,27 @@ export default class SASApiClient {
 
   async delete(url, options) {
     return this.request({method: 'DELETE', url, ...options});
+  }
+
+  async login(username, password) {
+    const response = await this.post('/tokens', null, {
+      headers: {
+        Authorization:  'Basic ' + btoa(username + ":" + password)
+      }
+    });
+    if (!response.ok) {
+      return response.status === 401 ? 'fail' : 'error';
+    }
+    localStorage.setItem('accessToken', response.body.access_token);
+    return 'ok';
+  }
+
+  async logout() {
+    await this.delete('/tokens');
+    localStorage.removeItem('accessToken');
+  }
+
+ isAuthenticated() {
+    return localStorage.getItem('accessToken') !== null;
   }
 }
