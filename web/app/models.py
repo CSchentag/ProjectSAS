@@ -5,6 +5,10 @@ Template for the database. After a change, a database upgrade must be done
 # pylint: disable=invalid-name
 import collections
 import strict_rfc3339
+import jwt
+from datetime import datetime, timedelta
+from time import time
+import secrets
 from flask import current_app
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -12,6 +16,41 @@ from flask_login import UserMixin, AnonymousUserMixin
 from hashlib import md5
 from . import db, login_manager
 
+
+class Token(db.Model):
+    __tablename__ = 'tokens'
+
+    id = db.Column(db.Integer, primary_key=True)
+    access_token = db.Column(db.String(64), nullable=False, index=True)
+    access_expiration = db.Column(db.DateTime, nullable=False)
+    refresh_token = db.Column(db.String(64), nullable=False, index=True)
+    refresh_expiration = db.Column(db.DateTime, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'),
+                          index=True)
+
+    user = db.relationship('User', back_populates='tokens')
+
+    def generate(self):
+        self.access_token = secrets.token_urlsafe()
+        self.access_expiration = datetime.utcnow() + \
+            timedelta(minutes=current_app.config['ACCESS_TOKEN_MINUTES'])
+        self.refresh_token = secrets.token_urlsafe()
+        self.refresh_expiration = datetime.utcnow() + \
+            timedelta(days=current_app.config['REFRESH_TOKEN_DAYS'])
+
+    def expire(self, delay=None):
+        if delay is None:  # pragma: no branch
+            # 5 second delay to allow simultaneous requests
+            delay = 5 if not current_app.testing else 0
+        self.access_expiration = datetime.utcnow() + timedelta(seconds=delay)
+        self.refresh_expiration = datetime.utcnow() + timedelta(seconds=delay)
+
+    @staticmethod
+    def clean():
+        """Remove any tokens that have been expired for more than a day."""
+        yesterday = datetime.utcnow() - timedelta(days=1)
+        db.session.execute(Token.delete().where(
+            Token.refresh_expiration < yesterday))
 
 # pylint: disable=no-member
 class User(UserMixin, db.Model):
@@ -33,6 +72,9 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(128), unique=True, index=True)
     password_hash = db.Column(db.String(128))
     confirmed = db.Column(db.Boolean, default=False)
+
+    tokens = db.relationship('Token', back_populates='user',
+                                   lazy='noload')
 
     @property
     def password(self):
@@ -75,110 +117,97 @@ class User(UserMixin, db.Model):
         """
         return check_password_hash(self.password_hash, password)
 
-    def generate_auth_token(self, expiration):
+    def generate_confirmation_token(self):
         """
-        Generates the auth token if username and password are given
-
-        Args:
-            self: is a class argument
-            expiration: how long the token will work for
-
-        Returns:
-            s.dumps which generates the auth_token
+        Create a confirmation token for authentication over email
         """
-        s = Serializer(current_app.config['SECRET_KEY'],
-                       expires_in=expiration)
-        return s.dumps({'id': self.id}).decode('ascii')
+        encoded_token = jwt.encode(
+            {
+                'exp': time() + current_app.config['RESET_TOKEN_MINUTES'] * 60,
+                'conf_email': self.email,
+            },
+            current_app.config['SECRET_KEY'],
+            algorithm='HS256'
+        )
+        return encoded_token
+
+    def verify_confirmation_token(self, conf_token):
+        """
+        Use confirmation token and ensure that email of user matches
+        confirmation token email
+        """
+        try:
+            data = jwt.decode(conf_token, current_app.config['SECRET_KEY'],
+                              algorithms=['HS256'])
+        except jwt.PyJWTError:
+            return False
+        if self.email == data['conf_email']:
+            self.confirmed = True
+            db.session.add(self)
+            db.session.commit()
+            return True
+        return False
+
+    def generate_auth_token(self):
+        token = Token(user=self)
+        token.generate()
+        return token
 
     @staticmethod
-    def verify_auth_token(token):
-        """
-        Verifies the auth token
+    def verify_access_token(access_token, refresh_token=None):
+        token = db.session.scalar(Token.select().filter_by(
+            access_token=access_token))
+        if token:
+            if token.access_expiration > datetime.utcnow():
+                db.session.commit()
+                return token.user
 
-        Args:
-            token: user's authentication token
+    @staticmethod
+    def verify_refresh_token(refresh_token, access_token):
+        token = db.session.scalar(Token.select().filter_by(
+            refresh_token=refresh_token, access_token=access_token))
+        if token:
+            if token.refresh_expiration > datetime.utcnow():
+                return token
 
-        Returns:
-            User.query.get(data['id']), gets user id after token is verified
+            # someone tried to refresh with an expired token
+            # revoke all tokens from this user as a precaution
+            token.user.revoke_all()
+            db.session.commit()
+
+    def revoke_all(self):
+        db.session.execute(Token.delete().where(Token.user == self))
+
+    def generate_reset_token(self):
         """
-        s = Serializer(current_app.config['SECRET_KEY'])
+        Create a reset token for authentication over email
+        """
+        encoded_token = jwt.encode(
+            {
+                'exp': time() + current_app.config['RESET_TOKEN_MINUTES'] * 60,
+                'reset_email': self.email,
+            },
+            current_app.config['SECRET_KEY'],
+            algorithm='HS256'
+        )
+        return encoded_token
+
+    def verify_reset_token(self, reset_token, form_data):
+        """
+        Use reset token and ensure that email of user matches
+        reset token email. Then update the password
+        """
         try:
-            data = s.loads(token)
-        except BaseException:
-            return None
-        return User.query.get(data['id'])
-
-    def generate_confirmation_token(self, expiration=3600):
-        """
-        Generates the confirmation token used to verify new user
-
-        Args:
-            expiration: expiration of token, default 1 hour
-
-        Returns:
-            The new token
-        """
-        s = Serializer(current_app.config['SECRET_KEY'], expiration)
-        return s.dumps({'confirm': self.id})
-
-    def confirm(self, token):
-        """
-        Confirms the confirmation token used to verify new user
-
-        Args:
-            token: The confirmation token
-
-        Returns:
-            True if the token is valid, False if it is not
-        """
-        s = Serializer(current_app.config['SECRET_KEY'])
-        try:
-            data = s.loads(token)
-        except BaseException:
+            data = jwt.decode(reset_token, current_app.config['SECRET_KEY'],
+                              algorithms=['HS256'])
+        except jwt.PyJWTError:
             return False
-        if data.get('confirm') != self.id:
-            return False
-        self.confirmed = True
-        db.session.add(self)
-        db.session.commit()
-        return True
-
-    def generate_reset_token(self, expiration=3600):
-        """
-        Generates a reset token if a user requests a password reset
-
-        Args:
-            expiration: The token will expire after an hour
-
-        Returns:
-            the reset token
-        """
-        s = Serializer(current_app.config['SECRET_KEY'], expiration)
-        return s.dumps({'reset': self.id})
-
-    def reset_password(self, token, new_password):
-        """
-        Resets the users password after a password reset request
-
-        Args:
-            token: The token for authentication
-            new_password: The users new password
-
-        Returns:
-            True if the token is valid, otherwise False
-        """
-        s = Serializer(current_app.config['SECRET_KEY'])
-        try:
-            data = s.loads(token)
-        except BaseException:
-            return False
-        if data.get('reset') != self.id:
-            return False
-        self.password = new_password
-        db.session.add(self)
-        db.session.commit()
-        return True
-
+        if self.email == data['reset_email']:
+            self.password = form_data
+            db.session.add(self)
+            db.session.commit()
+            return True
+        return False
 
 @login_manager.user_loader
 def load_user(user_id):

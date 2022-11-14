@@ -1,8 +1,8 @@
 """Initial migration
 
-Revision ID: bb99cb76c2c8
+Revision ID: 4478c8809b72
 Revises: 
-Create Date: 2022-11-08 17:58:27.422835
+Create Date: 2022-11-14 17:53:39.161591
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'bb99cb76c2c8'
+revision = '4478c8809b72'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -31,7 +31,7 @@ def upgrade():
     op.create_index(op.f('ix_accountants_email'), 'accountants', ['email'], unique=True)
     op.create_index(op.f('ix_accountants_name'), 'accountants', ['name'], unique=False)
     op.create_index(op.f('ix_accountants_phone_num'), 'accountants', ['phone_num'], unique=True)
-    op.create_table('users',
+    op.create_table('user',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('username', sa.String(length=128), nullable=True),
     sa.Column('email', sa.String(length=128), nullable=True),
@@ -39,8 +39,8 @@ def upgrade():
     sa.Column('confirmed', sa.Boolean(), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
-    op.create_index(op.f('ix_users_email'), 'users', ['email'], unique=True)
-    op.create_index(op.f('ix_users_username'), 'users', ['username'], unique=False)
+    op.create_index(op.f('ix_user_email'), 'user', ['email'], unique=True)
+    op.create_index(op.f('ix_user_username'), 'user', ['username'], unique=False)
     op.create_table('tokens',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('access_token', sa.String(length=64), nullable=False),
@@ -48,7 +48,7 @@ def upgrade():
     sa.Column('refresh_token', sa.String(length=64), nullable=False),
     sa.Column('refresh_expiration', sa.DateTime(), nullable=False),
     sa.Column('user_id', sa.Integer(), nullable=True),
-    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
+    sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_tokens_access_token'), 'tokens', ['access_token'], unique=False)
@@ -63,9 +63,9 @@ def downgrade():
     op.drop_index(op.f('ix_tokens_refresh_token'), table_name='tokens')
     op.drop_index(op.f('ix_tokens_access_token'), table_name='tokens')
     op.drop_table('tokens')
-    op.drop_index(op.f('ix_users_username'), table_name='users')
-    op.drop_index(op.f('ix_users_email'), table_name='users')
-    op.drop_table('users')
+    op.drop_index(op.f('ix_user_username'), table_name='user')
+    op.drop_index(op.f('ix_user_email'), table_name='user')
+    op.drop_table('user')
     op.drop_index(op.f('ix_accountants_phone_num'), table_name='accountants')
     op.drop_index(op.f('ix_accountants_name'), table_name='accountants')
     op.drop_index(op.f('ix_accountants_email'), table_name='accountants')

@@ -151,7 +151,7 @@ def register():
         db.session.commit()
         token = user.generate_confirmation_token()
         response = send_email(user.email, 'Confirm Your Account',
-                              'auth/email/confirm', user=user, token=token)
+                              'auth/email/confirm', user=user, token=token.access_token)
         flash('A confirmation email has been sent to you by email.')
         return redirect(url_for('main.index'))
     return render_template('auth/register.html', form=form)
@@ -172,7 +172,7 @@ def confirm(token):
     """
     if current_user.confirmed:
         return redirect(url_for('main.index'))
-    if current_user.confirm(token):
+    if current_user.verify_confirmation_token(token):
         flash('You have confirmed your account.')
     else:
         flash('The confirmation link is invalid or has expired.')
@@ -203,6 +203,7 @@ def resend_confirmation():
         redirects to main.index after the email has been sent.
     """
     token = current_user.generate_confirmation_token()
+    print(token)
     send_email(current_user.email, 'Confirm Your Account',
                'auth/email/confirm', user=current_user, token=token)
     flash('A new confirmation token has been sent to you by email.')
@@ -278,7 +279,7 @@ def password_reset(token):
     if form.validate_on_submit():
         email = form.email.data.lower()
         user = User.query.filter(func.lower(User.email)==email).first()
-        if user.reset_password(token, form.password.data):
+        if user.verify_reset_token(token, form.password.data):
             flash('Your password has been updated.')
             return redirect(url_for('auth.login'))
         flash('The password reset link is invalid or has expired.')

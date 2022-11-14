@@ -82,6 +82,10 @@ class Config(object):
     ERROR_LOGGING_MAX_BYTES = 25 * 1024 * 1024
     ERROR_LOGGING_BACKUP_COUNT = 7
 
+    ACCESS_TOKEN_MINUTES = 60
+    REFRESH_TOKEN_DAYS = 7
+    RESET_TOKEN_MINUTES = 60
+
     try:
         with open('/run/secrets/chamber_of_secrets') as secret_chamber:
             for line in secret_chamber:
