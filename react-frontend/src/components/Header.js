@@ -13,7 +13,7 @@ export default function Header() {
   return (
     <Navbar bg="light" sticky="top" className="Header">
       <Container>
-        <Navbar.Brand>Microblog</Navbar.Brand>
+        <Navbar.Brand>Project SAS</Navbar.Brand>
         <Nav>
           {user === undefined ?
             <Spinner animation="border" />

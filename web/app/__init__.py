@@ -7,6 +7,7 @@ import redis
 from logging.handlers import RotatingFileHandler
 from logging.config import dictConfig
 from flask import Flask
+from alchemical.flask import Alchemical
 from flask_bootstrap import Bootstrap
 from flask_bootstrap import WebCDN
 from flask_debug import Debug
@@ -22,6 +23,7 @@ from .watchdog import Watchdog
 from werkzeug.contrib.fixers import ProxyFix
 
 bootstrap = Bootstrap()
+#db = Alchemical()
 db = SQLAlchemy()
 debug = Debug()
 mail = Mail()

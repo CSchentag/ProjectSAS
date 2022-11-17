@@ -12,9 +12,11 @@ token_auth = HTTPTokenAuth()
 @basic_auth.verify_password
 def verify_password(username, password):
     if username and password:
-        user = db.session.scalar(User.select().filter_by(username=username))
+        user = User.query.filter_by(username=username).first()
+        #user = db.session.scalar(User.select().filter_by(username=username))
         if user is None:
-            user = db.session.scalar(User.select().filter_by(email=username))
+            #user = db.session.scalar(User.select().filter_by(email=username))
+            user = User.query.filter_by(email=username).first()
         if user and user.verify_password(password):
             return user
 
@@ -31,10 +33,10 @@ def basic_auth_error(status=401):
 
 @token_auth.verify_token
 def verify_token(access_token):
-    if current_app.config['DISABLE_AUTH']:
-        user = db.session.get(User, 1)
-        user.ping()
-        return user
+    #if current_app.config['DISABLE_AUTH']:
+    #    user = db.session.get(User, 1)
+    #    user.ping()
+    #    return user
     if access_token:
         return User.verify_access_token(access_token)
 

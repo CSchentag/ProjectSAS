@@ -1,6 +1,11 @@
 const BASE_API_URL = process.env.REACT_APP_BASE_API_URL;
 
 export default class SASApiClient {
+  constructor(onError) {
+    this.onError = onError;
+    this.base_url =  BASE_API_URL + '/api/v0.2';
+  }
+
   async request(options) {
     let response = await this.requestInternal(options);
     if (response.status === 401 && options.url !== '/tokens') {
@@ -9,16 +14,14 @@ export default class SASApiClient {
       });
       if (refreshResponse.ok) {
         localStorage.setItem('accessToken', refreshResponse.body.access_token);
-        response = await this.requestInternal(options);
+        response = this.requestInternal(options);
       }
+    }
+    if (response.status >= 500 && this.onError) {
+      this.onError(response);
     }
     return response;
   }
-
-  constructor() {
-    this.base_url =  BASE_API_URL + '/api/v0.1';
-  }
-
 
   async requestInternal(options) {
     let query = new URLSearchParams(options.query || {}).toString();
@@ -92,7 +95,8 @@ export default class SASApiClient {
     localStorage.removeItem('accessToken');
   }
 
- isAuthenticated() {
+  isAuthenticated() {
     return localStorage.getItem('accessToken') !== null;
   }
+
 }

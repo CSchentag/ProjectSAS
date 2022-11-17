@@ -1,12 +1,17 @@
-
-
-import { createContext, useContext } from 'react';
-import SASApiClient from '../SASApiClient';
+import { createContext, useContext, useCallback, useMemo } from 'react';
+import MicroblogApiClient from '../SASApiClient';
+import { useFlash } from './FlashProvider';
 
 const ApiContext = createContext();
 
 export default function ApiProvider({ children }) {
-  const api = new SASApiClient();
+  const flash = useFlash();
+
+  const onError = useCallback(() => {
+    flash('An unexpected error has occurred. Please try again later.', 'danger');
+  }, [flash]);
+
+  const api = useMemo(() => new MicroblogApiClient(onError), [onError]);
 
   return (
     <ApiContext.Provider value={api}>

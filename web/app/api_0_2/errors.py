@@ -1,13 +1,14 @@
 from flask import Blueprint, current_app
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from werkzeug.exceptions import HTTPException, InternalServerError
+from . import api_0_2
 
 from .. import apifairy
 
-errors = Blueprint('errors', __name__)
+#errors = Blueprint('errors', __name__)
 
 
-@errors.app_errorhandler(HTTPException)
+@api_0_2.app_errorhandler(HTTPException)
 def http_error(error):
     return {
         'code': error.code,
@@ -16,7 +17,7 @@ def http_error(error):
     }, error.code
 
 
-@errors.app_errorhandler(IntegrityError)
+@api_0_2.app_errorhandler(IntegrityError)
 def sqlalchemy_integrity_error(error):  # pragma: no cover
     return {
         'code': 400,
@@ -25,7 +26,7 @@ def sqlalchemy_integrity_error(error):  # pragma: no cover
     }, 400
 
 
-@errors.app_errorhandler(SQLAlchemyError)
+@api_0_2.app_errorhandler(SQLAlchemyError)
 def sqlalchemy_error(error):  # pragma: no cover
     if current_app.config['DEBUG'] is True:
         return {

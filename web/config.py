@@ -9,6 +9,10 @@ from datetime import timedelta as td
 from celery.task.control import rate_limit
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
+def as_bool(value):
+    if value:
+        return value.lower() in ['true', 'yes', 'on', '1']
+    return False
 
 class Config(object):
     """
@@ -85,6 +89,14 @@ class Config(object):
     ACCESS_TOKEN_MINUTES = 60
     REFRESH_TOKEN_DAYS = 7
     RESET_TOKEN_MINUTES = 60
+    REFRESH_TOKEN_IN_COOKIE = as_bool(os.environ.get(
+        'REFRESH_TOKEN_IN_COOKIE') or 'yes')
+    REFRESH_TOKEN_IN_BODY = as_bool(os.environ.get('REFRESH_TOKEN_IN_BODY'))
+    USE_CORS = as_bool(os.environ.get('USE_CORS') or 'yes')
+    CORS_SUPPORTS_CREDENTIALS = True
+
+    PASSWORD_RESET_URL = os.environ.get('PASSWORD_RESET_URL') or \
+        'http://localhost:3000/reset'
 
     try:
         with open('/run/secrets/chamber_of_secrets') as secret_chamber:
@@ -191,6 +203,7 @@ class LocalConfig(Config):
                 if 'FLASK_LOCAL_DATABASE' in line:
                     # Take the VAL part of ARG=VAL, strip newlines
                     SQLALCHEMY_DATABASE_URI = line.split("=")[1].rstrip()
+                    ALCHEMICAL_DATABASE_URI = line.split("=")[1].rstrip()
         try:
             SQLALCHEMY_DATABASE_URI
         except NameError:

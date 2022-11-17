@@ -9,7 +9,7 @@ export default function Post({ post }) {
         alt={post.name} roundedCircle />
       <div>
         <p>
-          <Link to={'/accountants/' + post.username}>
+          <Link to={'/user/' + post.username}>
             {post.name}
           </Link>
           &nbsp;&mdash;&nbsp;

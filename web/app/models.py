@@ -49,8 +49,11 @@ class Token(db.Model):
     def clean():
         """Remove any tokens that have been expired for more than a day."""
         yesterday = datetime.utcnow() - timedelta(days=1)
-        db.session.execute(Token.delete().where(
-            Token.refresh_expiration < yesterday))
+        tokens = Token.query.all()
+        for token in tokens:
+            if token.refresh_expiration<yesterday:
+                db.session.delete(token)
+                db.session.commit()
 
 # pylint: disable=no-member
 class User(UserMixin, db.Model):
@@ -61,6 +64,7 @@ class User(UserMixin, db.Model):
     Attributes:
         __tablename__: table title
         id: User id
+                db.session.commit()
         username: Takes the user's username
         email: Takes the user's email
         password_hash: storing the hashed & salted password
@@ -75,6 +79,11 @@ class User(UserMixin, db.Model):
 
     tokens = db.relationship('Token', back_populates='user',
                                    lazy='noload')
+
+    @property
+    def avatar_url(self):
+        digest = md5(self.email.lower().encode('utf-8')).hexdigest()
+        return f'https://www.gravatar.com/avatar/{digest}?d=identicon'
 
     @property
     def password(self):
@@ -155,8 +164,7 @@ class User(UserMixin, db.Model):
 
     @staticmethod
     def verify_access_token(access_token, refresh_token=None):
-        token = db.session.scalar(Token.select().filter_by(
-            access_token=access_token))
+        token = Token.query.filter_by(access_token=access_token).first()
         if token:
             if token.access_expiration > datetime.utcnow():
                 db.session.commit()
@@ -164,8 +172,9 @@ class User(UserMixin, db.Model):
 
     @staticmethod
     def verify_refresh_token(refresh_token, access_token):
-        token = db.session.scalar(Token.select().filter_by(
-            refresh_token=refresh_token, access_token=access_token))
+        #token = db.session.scalar(Token.select().filter_by(
+        #    refresh_token=refresh_token, access_token=access_token))
+        token = Token.query.filter_by(refresh_token=refresh_token, access_token=access_token).first()
         if token:
             if token.refresh_expiration > datetime.utcnow():
                 return token
@@ -176,7 +185,12 @@ class User(UserMixin, db.Model):
             db.session.commit()
 
     def revoke_all(self):
-        db.session.execute(Token.delete().where(Token.user == self))
+        #db.session.execute(Token.delete().where(Token.user == self))
+        tokens = Token.query.all()
+        for token in tokens:
+            if token.user == self:
+                db.session.delete(token)
+                db.session.commit()
 
     def generate_reset_token(self):
         """
@@ -192,22 +206,14 @@ class User(UserMixin, db.Model):
         )
         return encoded_token
 
-    def verify_reset_token(self, reset_token, form_data):
-        """
-        Use reset token and ensure that email of user matches
-        reset token email. Then update the password
-        """
+    @staticmethod
+    def verify_reset_token(reset_token):
         try:
             data = jwt.decode(reset_token, current_app.config['SECRET_KEY'],
                               algorithms=['HS256'])
         except jwt.PyJWTError:
-            return False
-        if self.email == data['reset_email']:
-            self.password = form_data
-            db.session.add(self)
-            db.session.commit()
-            return True
-        return False
+            return
+        return User.query.filter_by(email=data['reset_email']).first()
 
 @login_manager.user_loader
 def load_user(user_id):

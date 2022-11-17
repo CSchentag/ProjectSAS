@@ -37,7 +37,7 @@ except OSError as e:
     print('EXITING.')
     sys.exit(-1)
 app = create_app(FLASK_CONFIG)
-CORS(app)
+CORS(app, origins=["http://localhost:3000"], supports_credentials=True)
 manager = Manager(app)
 migrate = Migrate(app, db)
 
