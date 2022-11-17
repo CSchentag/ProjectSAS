@@ -184,7 +184,7 @@ class LocalConfig(Config):
         DEBUG: Sets  DEBUG status for error log while in local (True or False).
         SQLALCHEMY_DATABASE_URI: Sets the path to the databse.
     """
-    DEBUG = True
+    DEBUG = False  # if this is True, it won't show the traceback. Leave as false.
     try:
         with open('/run/secrets/chamber_of_secrets') as secret_chamber:
             for line in secret_chamber:

@@ -103,6 +103,7 @@ def get_accountants():
 def get_accountant_info(username):
     accountant = Accountants.query.filter(Accountants.email.contains(username)).first()
     json_data = accountant.to_json()
+    current_app.logger.warning('here')
     json_data['username'] = (json_data['email']).split('@')[0]
     data = {'data': json_data}
     return jsonify(data)

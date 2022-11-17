@@ -5,13 +5,17 @@ import sys
 import logging
 import redis
 from logging.handlers import RotatingFileHandler
+from logging.config import dictConfig
 from flask import Flask
 from flask_bootstrap import Bootstrap
 from flask_bootstrap import WebCDN
+from flask_debug import Debug
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_caching import Cache
 from flask_mail import Mail
+from flask_marshmallow import Marshmallow
+from apifairy import APIFairy
 from config import config, Config
 from celery import Celery
 from .watchdog import Watchdog
@@ -19,7 +23,10 @@ from werkzeug.contrib.fixers import ProxyFix
 
 bootstrap = Bootstrap()
 db = SQLAlchemy()
+debug = Debug()
 mail = Mail()
+apifairy = APIFairy()
+ma = Marshmallow()
 cache = Cache(config={
     'CACHE_TYPE': 'redis',
     'CACHE_KEY_PREFIX': 'fcache',
@@ -39,6 +46,7 @@ info_file_handler = RotatingFileHandler(
     filename='info_log.log',
     maxBytes=30 * 1024 * 1024,
     backupCount=7)
+#info_file_handler = logging.StreamHandler(sys.stderr)
 info_file_handler.setLevel(logging.INFO)
 info_formatter = logging.Formatter('%(asctime)s - %(name)s - '
                                    '%(levelname)s - %(message)s '
@@ -78,6 +86,9 @@ def create_app(config_name):
     mail.init_app(app)
     db.init_app(app)
     cache.init_app(app)
+    apifairy.init_app(app)
+    ma.init_app(app)
+    debug.init_app(app)
     celery.conf.update(app.config)
 
     # Clear cache at startup, Redis defaults to clear the whole DB if that
@@ -93,11 +104,12 @@ def create_app(config_name):
 
     # Backend Warning/Error Logger
     if not app.config['TESTING']:
-        error_file_handler = RotatingFileHandler(
-            filename=app.config['ERROR_LOGGING_LOCATION'],
-            maxBytes=app.config['ERROR_LOGGING_MAX_BYTES'],
-            backupCount=['ERROR_LOGGING_BACKUP_COUNT'])
+        #error_file_handler = RotatingFileHandler(
+        #    filename=app.config['ERROR_LOGGING_LOCATION'],
+        #    maxBytes=app.config['ERROR_LOGGING_MAX_BYTES'],
+        #    backupCount=['ERROR_LOGGING_BACKUP_COUNT'])
         formatter = logging.Formatter(app.config['LOGGING_FORMAT'])
+        error_file_handler = logging.StreamHandler(sys.stderr)
         error_file_handler.setFormatter(formatter)
         app.logger.setLevel(app.config['ERROR_LOGGING_LEVEL'])
         app.logger.addHandler(error_file_handler)
@@ -108,6 +120,9 @@ def create_app(config_name):
 
     from .api_0_1 import api_0_1 as api_0_1_blueprint
     app.register_blueprint(api_0_1_blueprint, url_prefix='/api/v0.1')
+
+    from .api_0_2 import api_0_2 as api_0_2_blueprint
+    app.register_blueprint(api_0_2_blueprint, url_prefix='/api/v0.2')
 
     from .auth import auth as auth_blueprint
     app.register_blueprint(auth_blueprint, url_prefix='/auth')
