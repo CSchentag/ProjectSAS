@@ -172,8 +172,6 @@ class User(UserMixin, db.Model):
 
     @staticmethod
     def verify_refresh_token(refresh_token, access_token):
-        #token = db.session.scalar(Token.select().filter_by(
-        #    refresh_token=refresh_token, access_token=access_token))
         token = Token.query.filter_by(refresh_token=refresh_token, access_token=access_token).first()
         if token:
             if token.refresh_expiration > datetime.utcnow():
@@ -185,7 +183,6 @@ class User(UserMixin, db.Model):
             db.session.commit()
 
     def revoke_all(self):
-        #db.session.execute(Token.delete().where(Token.user == self))
         tokens = Token.query.all()
         for token in tokens:
             if token.user == self:
@@ -265,71 +262,6 @@ class Accountants(db.Model):
     def avatar_url(self):
         digest = md5(self.email.lower().encode('utf-8')).hexdigest()
         return f'https://www.gravatar.com/avatar/{digest}?d=identicon'
-
-    @staticmethod
-    def flatten(dictionary, parent_key='', sep='__'):
-        """
-        Flattens nested incoming JSON messages
-
-        Args:
-            dictionary: input dictionary.
-            parent_key: the key for the nest
-            sep: is the characters between each flattened level
-
-        Returns:
-            dict, which takes the data and formats it into a
-            dictionary and indexes them by keys
-        """
-        items = []
-        for key, value in dictionary.items():
-            new_key = parent_key + sep + key if parent_key else key
-            if isinstance(value, collections.MutableMapping):
-                items.extend(Accountants.flatten(value, new_key, sep=sep).items())
-            else:
-                items.append((new_key, value))
-        return dict(items)
-
-    @staticmethod
-    def invalid_data(json_post, accepted_json):
-        """
-        Analyzes json message for any None values, returns which ones are
-        missing.
-
-        Args:
-            json_post: a json message stored as a flattened python dict
-            accepted_json: a json message that matches the accepted API
-
-        Returns:
-            A list of missing data or invalid sensors as a tuple of
-            (missing_data, invalid_sensors)
-        """
-        """
-        missing_data = []
-        data = Accountants.from_json(json_post)
-        to_json_data = data.to_json()
-        for key, value in to_json_data.items():
-            if value == "None":
-                if not current_app.config['TESTING']:  # pragma: no cover
-                    # disable print statement during testing
-                    # to avoid filling console with messages
-                    print('WARNING: Data missing for the following sensor:',
-                          key)
-                missing_data.append(key)
-
-        invalid_sensors = []
-        for key in json_post.keys():
-            if key not in accepted_json:
-                if not current_app.config['TESTING']:  # pragma: no cover
-                    # disable print statement during testing
-                    # to avoid filling console with messages
-                    print('WARNING: The following sensor has been '
-                          'added and is not in the database:', key)
-                    print('Ensure this new sensor is added to the appropriate '
-                          'backend functions.')
-                invalid_sensors.append(key)
-        return missing_data, invalid_sensors
-        """
-        pass
 
     def to_json(self):
         """

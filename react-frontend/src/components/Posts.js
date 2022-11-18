@@ -26,11 +26,11 @@ export default function Posts() {
       :
         <>
           {posts === null ?
-             <p>Could not retrieve blog posts.</p>
+             <p>Could not retrieve accountant data.</p>
           :
             <>
               {posts.length === 0 ?
-                <p>There are no blog posts.</p>
+                <p>No accountants found in database.</p>
               :
                 posts.map(post => <Post key={post.id} post={post} />)
               }
