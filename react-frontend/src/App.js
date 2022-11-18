@@ -7,7 +7,7 @@ import Header from './components/Header';
 import PublicRoute from './components/PublicRoute';
 import PrivateRoute from './components/PrivateRoute';
 import FeedPage from './pages/FeedPage';
-import ExplorePage from './pages/ExplorePage';
+import ExplorePage from './pages/TablePage';
 import UserPage from './pages/UserPage';
 import AccountantPage from './pages/AccountantPage';
 import EditUserPage from './pages/EditUserPage';
@@ -42,7 +42,7 @@ export default function App() {
                   <PrivateRoute>
                     <Routes>
                       <Route path="/" element={<FeedPage />} />
-                      <Route path="/explore" element={<ExplorePage />} />
+                      <Route path="/table" element={<TablePage />} />
                       <Route path="/user/:username" element={<UserPage />} />
                       <Route path="/accountants/:username" element={<AccountantPage />} />
                       <Route path="/edit" element={<EditUserPage />} />

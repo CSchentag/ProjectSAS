@@ -6,10 +6,10 @@ export default function Sidebar() {
   return (
     <Navbar sticky="top" className="flex-column Sidebar">
       <Nav.Item>
-        <Nav.Link as={NavLink} to="/" end>Accountants</Nav.Link>
+        <Nav.Link as={NavLink} to="/" end>Accountant List</Nav.Link>
       </Nav.Item>
       <Nav.Item>
-        <Nav.Link as={NavLink} to="/explore">Explore</Nav.Link>
+        <Nav.Link as={NavLink} to="/table">Accountant Table</Nav.Link>
       </Nav.Item>
     </Navbar>
   );
