@@ -17,6 +17,12 @@ from hashlib import md5
 from . import db, login_manager
 
 
+class Updateable:
+    def update(self, data):
+        for attr, value in data.items():
+            setattr(self, attr, value)
+
+
 class Token(db.Model):
     __tablename__ = 'tokens'
 
@@ -56,7 +62,7 @@ class Token(db.Model):
                 db.session.commit()
 
 # pylint: disable=no-member
-class User(UserMixin, db.Model):
+class User(UserMixin, Updateable, db.Model):
 
     """
     Template for the User table

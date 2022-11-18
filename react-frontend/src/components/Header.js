@@ -22,12 +22,15 @@ export default function Header() {
               {user !== null &&
                 <div className="justify-content-end">
                   <NavDropdown title={
-                    <Image src={user.avatar + '&s=32'} roundedCircle />
+                    <Image src={user.avatar_url + '&s=32'} roundedCircle />
                   } align="end">
                     <NavDropdown.Item as={NavLink} to={'/user/' + user.username}>
                       Profile
                     </NavDropdown.Item>
                     <NavDropdown.Divider />
+                    <NavDropdown.Item as={NavLink} to="/password">
+                      Change Password
+                    </NavDropdown.Item>
                     <NavDropdown.Item onClick={logout}>
                       Logout
                     </NavDropdown.Item>
