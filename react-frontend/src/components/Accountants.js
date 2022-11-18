@@ -1,38 +1,38 @@
 import { useState, useEffect } from 'react';
 import Spinner from 'react-bootstrap/Spinner';
 import { useApi } from '../contexts/ApiProvider';
-import Post from './Post';
+import Accountant from './Accountant';
 
-export default function Posts() {
-  const [posts, setPosts] = useState();
+export default function Accountants() {
+  const [accountants, setAccountants] = useState();
   const api = useApi();
 
   useEffect(() => {
     (async () => {
       const response = await api.get('/accountants/');
       if (response.ok) {
-        setPosts(response.body.data);
+        setAccountants(response.body.data);
       }
       else {
-        setPosts(null);
+        setAccountants(null);
       }
     })();
   }, [api]);
 
   return (
     <>
-      {posts === undefined ?
+      {accountants === undefined ?
         <Spinner animation="border" />
       :
         <>
-          {posts === null ?
+          {accountants === null ?
              <p>Could not retrieve accountant data.</p>
           :
             <>
-              {posts.length === 0 ?
+              {accountants.length === 0 ?
                 <p>No accountants found in database.</p>
               :
-                posts.map(post => <Post key={post.id} post={post} />)
+                accountants.map(accountant => <Accountant key={accountant.id} accountant={accountant} />)
               }
             </>
           }

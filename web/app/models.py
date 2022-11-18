@@ -212,6 +212,23 @@ class User(UserMixin, db.Model):
             return
         return User.query.filter_by(email=data['reset_email']).first()
 
+    def to_json(self):
+        """
+        Converts to JSON for API
+
+        Args:
+            self: is a class argument
+
+        Returns:
+            json_data which is the converted JSON for API
+        """
+        json_data = {
+            # Metadata
+            'username': self.username,
+            'email': self.email,
+        }
+        return json_data
+
 @login_manager.user_loader
 def load_user(user_id):
     """
@@ -273,7 +290,7 @@ class Accountants(db.Model):
         Returns:
             json_post which is the converted JSON for API
         """
-        json_post = {
+        json_data = {
             # Metadata
             'name': self.name,
             'email': self.email,
@@ -283,7 +300,7 @@ class Accountants(db.Model):
             'about_me': self.about_me,
             'avatar' : self.avatar_url
         }
-        return json_post
+        return json_data
 
     # pylint: disable=line-too-long
     @staticmethod

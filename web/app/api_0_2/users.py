@@ -1,5 +1,5 @@
 from apifairy.decorators import other_responses
-from flask import Blueprint, abort
+from flask import Blueprint, abort, jsonify
 from apifairy import authenticate, body, response
 
 from .. import db
@@ -18,3 +18,9 @@ update_user_schema = UpdateUserSchema(partial=True)
 def me():
     """Retrieve the authenticated user"""
     return token_auth.current_user()
+
+@api_0_2.route('/user/<username>', methods=['GET'])
+@authenticate(token_auth)
+def get_user_info(username):
+    user = User.query.filter_by(username=username).first()
+    return jsonify({'data': user.to_json()})

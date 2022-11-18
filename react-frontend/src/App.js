@@ -9,6 +9,7 @@ import PrivateRoute from './components/PrivateRoute';
 import FeedPage from './pages/FeedPage';
 import ExplorePage from './pages/ExplorePage';
 import UserPage from './pages/UserPage';
+import AccountantPage from './pages/AccountantPage';
 import EditUserPage from './pages/EditUserPage';
 import ChangePasswordPage from './pages/ChangePasswordPage';
 import LoginPage from './pages/LoginPage';
@@ -43,6 +44,7 @@ export default function App() {
                       <Route path="/" element={<FeedPage />} />
                       <Route path="/explore" element={<ExplorePage />} />
                       <Route path="/user/:username" element={<UserPage />} />
+                      <Route path="/accountants/:username" element={<AccountantPage />} />
                       <Route path="/edit" element={<EditUserPage />} />
                       <Route path="/password" element={<ChangePasswordPage />} />
                       <Route path="*" element={<Navigate to="/" />} />

@@ -6,32 +6,32 @@ import { useParams } from 'react-router-dom';
 import Body from '../components/Body';
 import { useApi } from '../contexts/ApiProvider';
 
-export default function UserPage() {
+export default function AccountantPage() {
   const { username } = useParams();
-  const [user, setUser] = useState();
+  const [accountant, setAccountant] = useState();
   const api = useApi();
 
   useEffect(() => {
     (async () => {
-      const response = await api.get('/user/' + username);
-      setUser(response.ok ? response.body.data : null);
+      const response = await api.get('/accountants/' + username);
+      setAccountant(response.ok ? response.body.data : null);
     })();
   }, [username, api]);
 
   return (
     <Body sidebar>
-      {user === undefined ?
+      {accountant === undefined ?
         <Spinner animation="border" />
       :
         <>
-          {user === null ?
-            <p>User not found.</p>
+          {accountant === null ?
+            <p>Accountant not found.</p>
           :
             <Stack direction="horizontal" gap={4}>
-              <Image src={user.avatar + '&s=128'} roundedCircle />
+              <Image src={accountant.avatar + '&s=128'} roundedCircle />
               <div>
-                <h1>{user.username}</h1>
-                {user.email && <h5>{user.email}</h5>}
+                <h1>{accountant.name}</h1>
+                {accountant.about_me && <h5>{accountant.about_me}</h5>}
               </div>
             </Stack>
           }

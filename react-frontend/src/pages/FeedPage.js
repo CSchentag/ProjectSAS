@@ -1,10 +1,10 @@
 import Body from '../components/Body';
-import Posts from '../components/Posts';
+import Accountants from '../components/Accountants';
 
 export default function FeedPage() {
   return (
     <Body sidebar>
-      <Posts />
+      <Accountants />
     </Body>
   );
 }
