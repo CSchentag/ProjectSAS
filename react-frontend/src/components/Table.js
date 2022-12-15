@@ -6,6 +6,7 @@ import Accountant from './Accountant';
 import BootstrapTable from 'react-bootstrap-table-next';
 import filterFactory, { textFilter } from 'react-bootstrap-table2-filter';
 import ToolkitProvider, {Search} from 'react-bootstrap-table2-toolkit/dist/react-bootstrap-table2-toolkit';
+import paginationFactory from 'react-bootstrap-table2-paginator/dist/react-bootstrap-table2-paginator';
 
 export default function Accountants() {
   const [accountants, setAccountants] = useState();
@@ -15,7 +16,8 @@ export default function Accountants() {
 
   const columns = [{
     dataField: 'name',
-    text: 'Product Name',
+    text: 'Name',
+    sort: true
   }, {
     dataField: 'email',
     text: 'Email',
@@ -24,13 +26,13 @@ export default function Accountants() {
     text: 'Phone Number',
   }, {
     dataField: 'company',
-    text: 'Product Price',
+    text: 'Company',
   }, {
     dataField: 'specialty',
-    text: 'Product Name',
+    text: 'Specialty',
   }, {
     dataField: 'about_me',
-    text: 'Example',
+    text: 'About Me',
   }];
 
   useEffect(() => {
@@ -62,17 +64,17 @@ export default function Accountants() {
                 keyField="id"
                 data={ accountants }
                 columns={ columns }
+                pagination={ paginationFactory()  }
                 search
               >
                 {
                   props => (
                     <div>
-                      <h3>Input something at below input field:</h3>
                       <SearchBar { ...props.searchProps } />
                       <ClearSearchButton { ...props.searchProps } />
                       <hr />
                       <BootstrapTable
-                        { ...props.baseProps }
+                        { ...props.baseProps } striped hover
                       />
                     </div>
                   )
