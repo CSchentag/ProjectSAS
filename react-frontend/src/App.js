@@ -7,7 +7,7 @@ import Header from './components/Header';
 import PublicRoute from './components/PublicRoute';
 import PrivateRoute from './components/PrivateRoute';
 import FeedPage from './pages/FeedPage';
-import ExplorePage from './pages/TablePage';
+import TablePage from './pages/TablePage';
 import UserPage from './pages/UserPage';
 import AccountantPage from './pages/AccountantPage';
 import EditUserPage from './pages/EditUserPage';

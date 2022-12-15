@@ -5,32 +5,21 @@ import { useApi } from '../contexts/ApiProvider';
 import Accountant from './Accountant';
 import BootstrapTable from 'react-bootstrap-table-next';
 import filterFactory, { textFilter } from 'react-bootstrap-table2-filter';
-import ToolkitProvider, {Search} from 'react-bootstrap-table2-toolkit/dist/react-bootstrap-table2-toolkit';
 
 export default function Accountants() {
   const [accountants, setAccountants] = useState();
   const api = useApi();
-
-  const { SearchBar, ClearSearchButton } = Search;
-
   const columns = [{
+    dataField: 'id',
+    text: 'Product ID',
+  }, {
     dataField: 'name',
     text: 'Product Name',
+    filter: textFilter()
   }, {
-    dataField: 'email',
-    text: 'Email',
-  }, {
-    dataField: 'phone_num',
-    text: 'Phone Number',
-  }, {
-    dataField: 'company',
+    dataField: 'price',
     text: 'Product Price',
-  }, {
-    dataField: 'specialty',
-    text: 'Product Name',
-  }, {
-    dataField: 'about_me',
-    text: 'Example',
+    filter: textFilter()
   }];
 
   useEffect(() => {
@@ -58,26 +47,29 @@ export default function Accountants() {
               {accountants.length === 0 ?
                 <p>No accountants found in database.</p>
               :
-              <ToolkitProvider
-                keyField="id"
-                data={ accountants }
-                columns={ columns }
-                search
-              >
-                {
-                  props => (
-                    <div>
-                      <h3>Input something at below input field:</h3>
-                      <SearchBar { ...props.searchProps } />
-                      <ClearSearchButton { ...props.searchProps } />
-                      <hr />
-                      <BootstrapTable
-                        { ...props.baseProps }
-                      />
-                    </div>
-                  )
-                }
-              </ToolkitProvider>
+              <Table striped bordered hover>
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone Number</th>
+                    <th>Company</th>
+                    <th>Specialty</th>
+                    <th>About Me</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {accountants && Object.keys(accountants).map((keyName, keyIndex) => 
+                      <tr key={keyIndex}>
+                          <td>{(accountants[keyName].name)}</td>
+                          <td>{(accountants[keyName].email)}</td>
+                          <td>{(accountants[keyName].phone_num)}</td>
+                          <td>{(accountants[keyName].company)}</td>
+                          <td>{(accountants[keyName].specialty)}</td>
+                          <td>{(accountants[keyName].about_me)}</td>
+                   </tr>)}
+                </tbody>
+              </Table>
               }
             </>
           }
