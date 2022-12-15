@@ -6,6 +6,7 @@ import Image from 'react-bootstrap/Image';
 import Spinner from 'react-bootstrap/Spinner';
 import { NavLink } from 'react-router-dom';
 import { useUser } from '../contexts/UserProvider';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 export default function Header() {
   const { user, logout } = useUser();
@@ -13,11 +14,28 @@ export default function Header() {
   return (
     <Navbar bg="light" sticky="top" className="Header">
       <Container>
-        <Navbar.Brand>Project SAS</Navbar.Brand>
-        <Nav>
+        <Navbar.Brand>
+            Sask Accountant Search Engine&nbsp;&nbsp;
+            <FontAwesomeIcon icon="fa-solid fa-briefcase" />
+             </Navbar.Brand>
+        <Nav.Item>
+        <Nav.Link as={NavLink} to="/" end>Accountant List</Nav.Link>
+      </Nav.Item>
+      <Nav.Item>
+        <Nav.Link as={NavLink} to="/table">Accountant Search</Nav.Link>
+      </Nav.Item>
+        <Nav.Item>
+        <Nav.Link as={NavLink} to="/" end>About Us</Nav.Link>
+      </Nav.Item>
+      <Nav.Item>
+        <Nav.Link as={NavLink} to="/table">Contact Us</Nav.Link>
+      </Nav.Item>
+
+      <Nav >
           {user === undefined ?
             <Spinner animation="border" />
           :
+
             <>
               {user !== null &&
                 <div className="justify-content-end">
