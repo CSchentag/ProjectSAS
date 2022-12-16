@@ -14,21 +14,21 @@ export default function Header() {
   return (
     <Navbar bg="light" sticky="top" className="Header">
       <Container>
-        <Navbar.Brand>
+        <Navbar.Brand href='/'>
             Sask Accountant Search Engine&nbsp;&nbsp;
             <FontAwesomeIcon icon="fa-solid fa-briefcase" />
              </Navbar.Brand>
         <Nav.Item>
-        <Nav.Link as={NavLink} to="/" end>Accountant List</Nav.Link>
+        <Nav.Link as={NavLink} to="/list" end>Accountant List</Nav.Link>
       </Nav.Item>
       <Nav.Item>
         <Nav.Link as={NavLink} to="/table">Accountant Search</Nav.Link>
       </Nav.Item>
         <Nav.Item>
-        <Nav.Link as={NavLink} to="/" end>About Us</Nav.Link>
+        <Nav.Link as={NavLink} to="/about" end>About Us</Nav.Link>
       </Nav.Item>
       <Nav.Item>
-        <Nav.Link as={NavLink} to="/table">Contact Us</Nav.Link>
+        <Nav.Link as={NavLink} to="/contact">Contact Us</Nav.Link>
       </Nav.Item>
 
       <Nav >

@@ -4,9 +4,13 @@ import FlashProvider from './contexts/FlashProvider';
 import ApiProvider from './contexts/ApiProvider';
 import UserProvider from './contexts/UserProvider';
 import Header from './components/Header';
+import Footer from './components/Footer';
 import PublicRoute from './components/PublicRoute';
 import PrivateRoute from './components/PrivateRoute';
-import FeedPage from './pages/FeedPage';
+import ListPage from './pages/ListPage';
+import HomePage from './pages/HomePage';
+import AboutPage from './pages/AboutPage';
+import ContactPage from './pages/ContactPage';
 import TablePage from './pages/TablePage';
 import UserPage from './pages/UserPage';
 import AccountantPage from './pages/AccountantPage';
@@ -45,8 +49,11 @@ export default function App() {
                 <Route path="*" element={
                   <PrivateRoute>
                     <Routes>
-                      <Route path="/" element={<FeedPage />} />
+                      <Route path="/" element={<HomePage />} />
+                      <Route path="/list" element={<ListPage />} />
                       <Route path="/table" element={<TablePage />} />
+                      <Route path="/about" element={<AboutPage />} />
+                      <Route path="/contact" element={<ContactPage />} />
                       <Route path="/user/:username" element={<UserPage />} />
                       <Route path="/accountants/:username" element={<AccountantPage />} />
                       <Route path="/edit" element={<EditUserPage />} />
@@ -56,6 +63,27 @@ export default function App() {
                   </PrivateRoute>
                 } />
               </Routes>
+              <br />
+              <br />
+              <br />
+              <br />
+              <br />
+              <br />
+              <br />
+              <br />
+              <br />
+              <br />
+              <br />
+              <br />
+              <br />
+              <br />
+              <br />
+              <br />
+              <br />
+              <br />
+              <br />
+              <br />
+              <Footer />
             </UserProvider>
           </ApiProvider>
         </FlashProvider>
