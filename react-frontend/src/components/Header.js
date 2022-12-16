@@ -18,20 +18,20 @@ export default function Header() {
             Sask Accountant Search Engine&nbsp;&nbsp;
             <FontAwesomeIcon icon="fa-solid fa-briefcase" />
              </Navbar.Brand>
-        <Nav.Item>
-        <Nav.Link as={NavLink} to="/list" end>Accountant List</Nav.Link>
-      </Nav.Item>
-      <Nav.Item>
-        <Nav.Link as={NavLink} to="/table">Accountant Search</Nav.Link>
-      </Nav.Item>
-        <Nav.Item>
-        <Nav.Link as={NavLink} to="/about" end>About Us</Nav.Link>
-      </Nav.Item>
-      <Nav.Item>
-        <Nav.Link as={NavLink} to="/contact">Contact Us</Nav.Link>
-      </Nav.Item>
+                <Nav.Item>
+                <Nav.Link as={NavLink} to="/list" end>Accountant List</Nav.Link>
+              </Nav.Item>
+              <Nav.Item>
+                <Nav.Link as={NavLink} to="/table">Accountant Search</Nav.Link>
+              </Nav.Item>
+                <Nav.Item>
+                <Nav.Link as={NavLink} to="/about" end>About Us</Nav.Link>
+              </Nav.Item>
+              <Nav.Item>
+                <Nav.Link as={NavLink} to="/contact">Contact Us</Nav.Link>
+              </Nav.Item>
 
-      <Nav >
+              <Nav >
           {user === undefined ?
             <Spinner animation="border" />
           :
